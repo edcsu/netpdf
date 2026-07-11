@@ -1,3 +1,4 @@
+using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using SharpDocument = PdfSharp.Pdf.PdfDocument;
 using PdfSharp.Pdf.IO;
@@ -82,6 +83,29 @@ internal static class PdfManipulator
             security.UserPassword = userPassword;
         if (ownerPassword is not null)
             security.OwnerPassword = ownerPassword;
+        return ToBytes(doc);
+    }
+
+    internal static byte[] Stamp(byte[] pdf, byte[] stamp, int stampPageIndex,
+        IReadOnlySet<int> pageIndexes, bool under)
+    {
+        using var doc = OpenModify(pdf);
+        // The source stream must stay alive until the document is saved.
+        using var stampStream = new MemoryStream(stamp);
+        using var form = XPdfForm.FromStream(stampStream);
+        if (stampPageIndex < 0 || stampPageIndex >= form.PageCount)
+            throw new ArgumentOutOfRangeException(nameof(stampPageIndex));
+        form.PageIndex = stampPageIndex;
+
+        for (var i = 0; i < doc.PageCount; i++)
+        {
+            if (pageIndexes.Count > 0 && !pageIndexes.Contains(i))
+                continue;
+            var page = doc.Pages[i];
+            using var gfx = XGraphics.FromPdfPage(page,
+                under ? XGraphicsPdfPageOptions.Prepend : XGraphicsPdfPageOptions.Append);
+            gfx.DrawImage(form, new XRect(0, 0, page.Width.Point, page.Height.Point));
+        }
         return ToBytes(doc);
     }
 

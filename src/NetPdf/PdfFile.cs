@@ -119,6 +119,24 @@ public sealed class PdfDocument : IDisposable
     public PdfDocument WithMetadata(Action<MetadataBuilder> configure) =>
         new(PdfManipulator.SetMetadata(_bytes, info => configure(new MetadataBuilder(info))));
 
+    /// <summary>
+    /// Returns a new document with a page of <paramref name="stamp"/> drawn on top of the
+    /// selected pages (0-based; none selected = all pages). The stamp page is scaled to each
+    /// target page. Useful for watermarks and "approved" stamps.
+    /// </summary>
+    public PdfDocument Overlay(PdfDocument stamp, int stampPageIndex = 0, params int[] pageIndexes) =>
+        new(PdfManipulator.Stamp(_bytes, stamp._bytes, stampPageIndex,
+            new HashSet<int>(pageIndexes), under: false));
+
+    /// <summary>
+    /// Returns a new document with a page of <paramref name="stamp"/> drawn beneath the content
+    /// of the selected pages (0-based; none selected = all pages). The stamp page is scaled to
+    /// each target page. Useful for letterheads and backgrounds.
+    /// </summary>
+    public PdfDocument Underlay(PdfDocument stamp, int stampPageIndex = 0, params int[] pageIndexes) =>
+        new(PdfManipulator.Stamp(_bytes, stamp._bytes, stampPageIndex,
+            new HashSet<int>(pageIndexes), under: true));
+
     /// <summary>Returns a new password-protected document.</summary>
     public PdfDocument Protect(string? userPassword = null, string? ownerPassword = null) =>
         new(PdfManipulator.Protect(_bytes, userPassword, ownerPassword));
