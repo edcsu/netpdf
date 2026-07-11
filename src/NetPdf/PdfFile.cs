@@ -158,6 +158,31 @@ public sealed class PdfDocument : IDisposable
     /// </summary>
     public PdfDocument Decrypt() => new(PdfManipulator.Decrypt(_bytes, _password));
 
+    /// <summary>The document's raw XMP metadata packet (XML), or null if it has none.</summary>
+    public string? GetXmpMetadata() => _reader.Value.GetXmpMetadata();
+
+    /// <summary>
+    /// Returns a new document with the given raw XMP packet (XML) as its metadata.
+    /// Apply as the last step: other manipulations regenerate XMP from the Info dictionary.
+    /// Not supported on encrypted documents; call <see cref="Decrypt"/> first.
+    /// </summary>
+    public PdfDocument WithXmpMetadata(string xmpPacket)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(xmpPacket);
+        if (_password is not null)
+            throw new InvalidOperationException(
+                "XMP metadata cannot be written to an encrypted document. Call Decrypt() first.");
+        return new(XmpWriter.SetXmp(_bytes, xmpPacket));
+    }
+
+    /// <summary>
+    /// Returns a new document with an XMP packet generated from the Info metadata
+    /// (title, author, subject, keywords, producer), keeping both in sync.
+    /// Apply as the last step: other manipulations regenerate XMP from the Info dictionary.
+    /// </summary>
+    public PdfDocument WithGeneratedXmpMetadata() =>
+        WithXmpMetadata(XmpWriter.GeneratePacket(Metadata));
+
     /// <summary>Returns a new document with a file embedded under the given name.</summary>
     public PdfDocument AttachFile(string name, byte[] content)
     {
