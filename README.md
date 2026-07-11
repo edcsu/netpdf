@@ -15,7 +15,7 @@ Targets `net8.0`, `net9.0`, and `net10.0`. Works on Windows, macOS, and Linux.
 ## Install
 
 ```sh
-dotnet add package NetPdf
+dotnet add package NetPdfKit
 ```
 
 ## Create a PDF
