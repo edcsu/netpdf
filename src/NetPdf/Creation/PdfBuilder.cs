@@ -28,6 +28,16 @@ public sealed class PdfBuilder
         return this;
     }
 
+    /// <summary>
+    /// Configures the document outline (bookmarks). Call after the pages the bookmarks
+    /// point to have been added.
+    /// </summary>
+    public PdfBuilder WithOutline(Action<OutlineBuilder> configure)
+    {
+        configure(new OutlineBuilder(_document, _document.Outlines));
+        return this;
+    }
+
     /// <summary>Writes the document to a file.</summary>
     public void Save(string path)
     {

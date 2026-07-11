@@ -221,6 +221,26 @@ public sealed class PageBuilder : IDisposable
     private static XSolidBrush MakeBrush(System.Drawing.Color color) =>
         new(XColor.FromArgb(color.R, color.G, color.B));
 
+    /// <summary>Adds a clickable link to a web URL over the given area (points from the top-left corner).</summary>
+    public PageBuilder AddWebLink(double x, double y, double width, double height, string url)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(url);
+        _page.AddWebLink(LinkRect(x, y, width, height), url);
+        return this;
+    }
+
+    /// <summary>Adds a clickable link to another page of the same document (0-based index) over the given area.</summary>
+    public PageBuilder AddDocumentLink(double x, double y, double width, double height, int destinationPageIndex)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(destinationPageIndex);
+        // PDFsharp destination page numbers are 1-based.
+        _page.AddDocumentLink(LinkRect(x, y, width, height), destinationPageIndex + 1);
+        return this;
+    }
+
+    private PdfRectangle LinkRect(double x, double y, double width, double height) =>
+        new(_gfx.Transformer.WorldToDefaultPage(new XRect(x, y, width, height)));
+
     private void DrawImage(XImage image, double x, double y, double? width, double? height)
     {
         var w = width ?? (height is { } h ? h * image.PixelWidth / image.PixelHeight : image.PointWidth);
