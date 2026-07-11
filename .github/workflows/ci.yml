@@ -19,6 +19,11 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
+      - name: Install fonts (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-liberation fonts-dejavu-core
       - name: Build
         run: dotnet build -c Release
       - name: Test
