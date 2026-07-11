@@ -17,6 +17,15 @@ public enum Rotation
     CounterClockwise90 = 270,
 }
 
+/// <summary>Encryption algorithms for <see cref="PdfDocument.Protect"/>.</summary>
+public enum EncryptionAlgorithm
+{
+    /// <summary>AES 256-bit (PDF 2.0). Recommended.</summary>
+    Aes256,
+    /// <summary>RC4 128-bit. Weak by modern standards; use only when a legacy reader requires it.</summary>
+    Rc4_128,
+}
+
 /// <summary>Entry point for creating and opening PDF documents.</summary>
 public static class PdfFile
 {
@@ -86,25 +95,25 @@ public sealed class PdfDocument : IDisposable
 
     /// <summary>Returns a new document containing only the given pages (0-based), in the given order.</summary>
     public PdfDocument ExtractPages(params int[] pageIndexes) =>
-        new(PdfManipulator.ExtractPages(_bytes, pageIndexes));
+        new(PdfManipulator.ExtractPages(_bytes, pageIndexes, _password));
 
     /// <summary>Returns a new document with the given pages (0-based) removed.</summary>
     public PdfDocument DeletePages(params int[] pageIndexes) =>
-        new(PdfManipulator.DeletePages(_bytes, new HashSet<int>(pageIndexes)));
+        new(PdfManipulator.DeletePages(_bytes, new HashSet<int>(pageIndexes), _password));
 
     /// <summary>Returns a new document with the pages rearranged into the given 0-based order.</summary>
     public PdfDocument ReorderPages(params int[] newOrder) =>
-        new(PdfManipulator.ExtractPages(_bytes, newOrder));
+        new(PdfManipulator.ExtractPages(_bytes, newOrder, _password));
 
     /// <summary>Returns a new document with one page rotated.</summary>
     public PdfDocument RotatePage(int pageIndex, Rotation rotation) =>
-        new(PdfManipulator.RotatePage(_bytes, pageIndex, (int)rotation));
+        new(PdfManipulator.RotatePage(_bytes, pageIndex, (int)rotation, _password), _password);
 
     /// <summary>Splits the document into files of <paramref name="pagesPerFile"/> pages each, written to <paramref name="outputDirectory"/>. Returns the paths written.</summary>
     public IReadOnlyList<string> Split(int pagesPerFile, string outputDirectory, string baseName = "part")
     {
         Directory.CreateDirectory(outputDirectory);
-        var parts = PdfManipulator.Split(_bytes, pagesPerFile);
+        var parts = PdfManipulator.Split(_bytes, pagesPerFile, _password);
         var paths = new List<string>(parts.Count);
         for (var i = 0; i < parts.Count; i++)
         {
@@ -117,7 +126,7 @@ public sealed class PdfDocument : IDisposable
 
     /// <summary>Returns a new document with updated metadata.</summary>
     public PdfDocument WithMetadata(Action<MetadataBuilder> configure) =>
-        new(PdfManipulator.SetMetadata(_bytes, info => configure(new MetadataBuilder(info))));
+        new(PdfManipulator.SetMetadata(_bytes, info => configure(new MetadataBuilder(info)), _password), _password);
 
     /// <summary>
     /// Returns a new document with a page of <paramref name="stamp"/> drawn on top of the
@@ -126,7 +135,7 @@ public sealed class PdfDocument : IDisposable
     /// </summary>
     public PdfDocument Overlay(PdfDocument stamp, int stampPageIndex = 0, params int[] pageIndexes) =>
         new(PdfManipulator.Stamp(_bytes, stamp._bytes, stampPageIndex,
-            new HashSet<int>(pageIndexes), under: false));
+            new HashSet<int>(pageIndexes), under: false, _password), _password);
 
     /// <summary>
     /// Returns a new document with a page of <paramref name="stamp"/> drawn beneath the content
@@ -135,11 +144,19 @@ public sealed class PdfDocument : IDisposable
     /// </summary>
     public PdfDocument Underlay(PdfDocument stamp, int stampPageIndex = 0, params int[] pageIndexes) =>
         new(PdfManipulator.Stamp(_bytes, stamp._bytes, stampPageIndex,
-            new HashSet<int>(pageIndexes), under: true));
+            new HashSet<int>(pageIndexes), under: true, _password), _password);
 
-    /// <summary>Returns a new password-protected document.</summary>
-    public PdfDocument Protect(string? userPassword = null, string? ownerPassword = null) =>
-        new(PdfManipulator.Protect(_bytes, userPassword, ownerPassword));
+    /// <summary>Returns a new password-protected document (AES-256 by default).</summary>
+    public PdfDocument Protect(string? userPassword = null, string? ownerPassword = null,
+        EncryptionAlgorithm algorithm = EncryptionAlgorithm.Aes256) =>
+        new(PdfManipulator.Protect(_bytes, userPassword, ownerPassword, algorithm, _password),
+            userPassword ?? ownerPassword);
+
+    /// <summary>
+    /// Returns a new document with encryption removed. The document must have been opened
+    /// with its password if one is required.
+    /// </summary>
+    public PdfDocument Decrypt() => new(PdfManipulator.Decrypt(_bytes, _password));
 
     // ---- Rendering ----
 
