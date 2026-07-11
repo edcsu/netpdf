@@ -19,12 +19,12 @@ The biggest gap is a **layout engine**: NetPdf draws at explicit x/y with no mea
 
 Independent items that fit the existing wrapper design. Each bullet maps cleanly to one GitHub issue.
 
-- [ ] **AES-256 encryption + explicit decryption API** (S) — PDFsharp supports AES; replaces the deliberately weak RC4-128 default noted in the README
-- [ ] **Hyperlinks & bookmarks/outlines** (S) — link annotations and document outline via PDFsharp
-- [ ] **Overlays / underlays** (S) — stamp a page or PDF onto another (watermarks, letterheads) via form XObjects
-- [ ] **File attachments** (S) — embedded files
-- [ ] **More drawing primitives** (S) — ellipse, polygon, bézier, rounded rectangle; text alignment, underline/strikethrough, line spacing in `TextOptions`
-- [ ] **XMP metadata read/write** (M)
+- [x] **AES-256 encryption + explicit decryption API** (S) — PDFsharp supports AES; replaces the deliberately weak RC4-128 default noted in the README
+- [x] **Hyperlinks & bookmarks/outlines** (S) — link annotations and document outline via PDFsharp
+- [x] **Overlays / underlays** (S) — stamp a page or PDF onto another (watermarks, letterheads) via form XObjects
+- [x] **File attachments** (S) — embedded files
+- [x] **More drawing primitives** (S) — ellipse, polygon, bézier, rounded rectangle; text alignment, underline/strikethrough, line spacing in `TextOptions`
+- [x] **XMP metadata read/write** (M) — raw packet + Info-derived generator; written as an incremental update (PDFsharp regenerates `/Metadata` on save), so apply XMP last
 
 ## Phase 2 — Layout engine foundation
 
