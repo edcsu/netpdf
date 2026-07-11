@@ -51,25 +51,31 @@ internal sealed class SystemFontResolver : IFontResolver
     private static string? FindFace(string familyName, bool bold, bool italic)
     {
         var files = FontFiles.Value;
-        var style = (bold, italic) switch
-        {
-            (true, true) => " bold italic",
-            (true, false) => " bold",
-            (false, true) => " italic",
-            _ => "",
-        };
+        var family = NormalizeAlnum(familyName);
+        var style = StyleToken(bold, italic);
 
-        var key = Normalize(familyName + style);
+        var key = $"{family}|{style}";
         if (files.ContainsKey(key))
             return key;
 
         // Fall back to the regular face of the family; PDFsharp can simulate styles.
-        key = Normalize(familyName);
+        key = $"{family}|regular";
         return files.ContainsKey(key) ? key : null;
     }
 
-    private static string Normalize(string name) =>
-        name.Replace("-", " ").Replace("_", " ").ToLowerInvariant().Trim();
+    private static string StyleToken(bool bold, bool italic) => (bold, italic) switch
+    {
+        (true, true) => "bolditalic",
+        (true, false) => "bold",
+        (false, true) => "italic",
+        _ => "regular",
+    };
+
+    // Strips every non-alphanumeric character so family names match regardless of
+    // whether the source (requested family vs. on-disk filename) uses spaces,
+    // hyphens, or no separator at all (e.g. "Liberation Sans" vs "LiberationSans-Regular").
+    private static string NormalizeAlnum(string name) =>
+        new(name.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
 
     private static Dictionary<string, string> ScanFontDirectories()
     {
@@ -95,11 +101,47 @@ internal sealed class SystemFontResolver : IFontResolver
                 if (ext is not (".ttf" or ".otf"))
                     continue;
 
-                var key = Normalize(Path.GetFileNameWithoutExtension(file));
-                map.TryAdd(key, file);
+                var (family, style) = SplitFamilyAndStyle(Path.GetFileNameWithoutExtension(file));
+                map.TryAdd($"{family}|{style}", file);
             }
         }
 
         return map;
+    }
+
+    private static (string Family, string Style) SplitFamilyAndStyle(string baseName)
+    {
+        var normalized = NormalizeAlnum(baseName);
+
+        // Longest/most specific suffixes first so e.g. "bolditalic" isn't matched as "italic".
+        string[] boldItalicSuffixes = ["bolditalic", "boldoblique", "italicbold"];
+        string[] boldSuffixes = ["bold"];
+        string[] italicSuffixes = ["italic", "oblique"];
+
+        if (TryStripSuffix(normalized, boldItalicSuffixes, out var family))
+            return (family, "bolditalic");
+        if (TryStripSuffix(normalized, boldSuffixes, out family))
+            return (family, "bold");
+        if (TryStripSuffix(normalized, italicSuffixes, out family))
+            return (family, "italic");
+        if (TryStripSuffix(normalized, ["regular"], out family))
+            return (family, "regular");
+
+        return (normalized, "regular");
+    }
+
+    private static bool TryStripSuffix(string normalized, string[] suffixes, out string family)
+    {
+        foreach (var suffix in suffixes)
+        {
+            if (normalized.Length > suffix.Length && normalized.EndsWith(suffix, StringComparison.Ordinal))
+            {
+                family = normalized[..^suffix.Length];
+                return true;
+            }
+        }
+
+        family = normalized;
+        return false;
     }
 }
