@@ -36,6 +36,15 @@ internal sealed class PdfReader : IDisposable
         }
     }
 
+    internal IReadOnlyList<PdfAttachment> GetAttachments()
+    {
+        if (!_document.Advanced.TryGetEmbeddedFiles(out var files))
+            return [];
+        return files
+            .Select(f => new PdfAttachment { Name = f.Name, Content = f.Memory.ToArray() })
+            .ToList();
+    }
+
     internal string ExtractText()
     {
         var sb = new StringBuilder();

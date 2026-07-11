@@ -158,6 +158,21 @@ public sealed class PdfDocument : IDisposable
     /// </summary>
     public PdfDocument Decrypt() => new(PdfManipulator.Decrypt(_bytes, _password));
 
+    /// <summary>Returns a new document with a file embedded under the given name.</summary>
+    public PdfDocument AttachFile(string name, byte[] content)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentNullException.ThrowIfNull(content);
+        return new(PdfManipulator.AttachFile(_bytes, name, content, _password), _password);
+    }
+
+    /// <summary>Returns a new document with the file at <paramref name="path"/> embedded, named after its file name.</summary>
+    public PdfDocument AttachFile(string path) =>
+        AttachFile(Path.GetFileName(path), File.ReadAllBytes(path));
+
+    /// <summary>The files embedded in the document.</summary>
+    public IReadOnlyList<PdfAttachment> GetAttachments() => _reader.Value.GetAttachments();
+
     // ---- Rendering ----
 
     /// <summary>Renders a page (0-based index) to a PNG image.</summary>

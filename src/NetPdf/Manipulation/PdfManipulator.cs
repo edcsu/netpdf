@@ -125,6 +125,51 @@ internal static class PdfManipulator
         return ToBytes(doc);
     }
 
+    internal static byte[] AttachFile(byte[] pdf, string name, byte[] content, string? password = null)
+    {
+        // Built by hand: PDFsharp's AddEmbeddedFile replaces the name tree of a loaded
+        // document instead of appending to it, dropping existing attachments.
+        using var doc = OpenModify(pdf, password);
+
+        var efStream = new PdfDictionary(doc);
+        doc.Internals.AddObject(efStream);
+        efStream.Elements["/Type"] = new PdfName("/EmbeddedFile");
+        efStream.CreateStream(content);
+
+        var efDict = new PdfDictionary(doc);
+        efDict.Elements["/F"] = efStream.Reference;
+
+        var filespec = new PdfDictionary(doc);
+        doc.Internals.AddObject(filespec);
+        filespec.Elements["/Type"] = new PdfName("/Filespec");
+        filespec.Elements["/F"] = new PdfString(name);
+        filespec.Elements["/UF"] = new PdfString(name);
+        filespec.Elements["/EF"] = efDict;
+
+        var catalog = doc.Internals.Catalog;
+        var names = catalog.Elements.GetDictionary("/Names");
+        if (names is null)
+        {
+            names = new PdfDictionary(doc);
+            catalog.Elements["/Names"] = names;
+        }
+        var embedded = names.Elements.GetDictionary("/EmbeddedFiles");
+        if (embedded is null)
+        {
+            embedded = new PdfDictionary(doc);
+            names.Elements["/EmbeddedFiles"] = embedded;
+        }
+        var entries = embedded.Elements.GetArray("/Names");
+        if (entries is null)
+        {
+            entries = new PdfArray(doc);
+            embedded.Elements["/Names"] = entries;
+        }
+        entries.Elements.Add(new PdfString(name));
+        entries.Elements.Add(filespec.Reference!);
+        return ToBytes(doc);
+    }
+
     private static SharpDocument OpenImport(byte[] bytes, string? password = null)
     {
         using var ms = new MemoryStream(bytes);
