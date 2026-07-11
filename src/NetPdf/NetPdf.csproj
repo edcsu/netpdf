@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>NetPdf</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Sewa</Authors>
+    <Description>Create, view, and manage PDF files with one fluent API. Wraps PDFsharp, PdfPig, and PDFtoImage behind a unified document model.</Description>
+    <PackageTags>pdf;create;merge;split;extract;render</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/sewa/netpdf</RepositoryUrl>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PDFsharp" Version="6.1.1" />
+    <PackageReference Include="PdfPig" Version="0.1.9" />
+    <PackageReference Include="PDFtoImage" Version="5.1.0" />
+  </ItemGroup>
+
+</Project>
