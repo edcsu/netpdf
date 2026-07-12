@@ -41,6 +41,39 @@ PdfFile.Create()
 Text supports styling and layout options: `Bold()`, `Italic()`, `Underline()`, `Strikethrough()`,
 `Align(TextAlignment.Center)`, `Wrap(width)`, and `LineSpacing(1.5)`.
 
+## Lay out a document
+
+The fluent layout API measures and paginates content automatically — no coordinates needed.
+Headers and footers repeat on every page, and `{number}`/`{total}` resolve to page numbers.
+
+```csharp
+using NetPdf.Fluent;
+
+Document.Create(doc => doc
+    .Page(page => page
+        .Size(PageSizes.A4)
+        .Margin(50)
+        .Header(h => h.Text("ACME Quarterly Report"))
+        .Content(c => c
+            .Padding(10)
+            .Column(column =>
+            {
+                column.Spacing(8);
+                column.Item().Text("Body text wraps and flows across pages automatically.");
+                column.Item().Row(row =>
+                {
+                    row.ConstantItem(120).Text("Label");
+                    row.RelativeItem().Text("Value that takes the remaining width");
+                });
+            }))
+        .Footer(f => f.AlignCenter().PageNumber("Page {number} of {total}"))))
+    .Save("report.pdf");
+```
+
+Containers compose with chainable calls: `Padding`, `Width`/`Height` (plus min/max),
+`AlignCenter`/`AlignMiddle`/…, `AspectRatio`, `Extend`, `Shrink`, `Unconstrained`, and `Offset`.
+Custom `IElement` implementations plug in via `.Element(...)`.
+
 ## Read a PDF
 
 ```csharp
