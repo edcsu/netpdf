@@ -147,16 +147,14 @@ internal static partial class PdfSigner
             long r1Length = long.Parse(m.Groups[2].Value);
             long r2Start = long.Parse(m.Groups[3].Value);
             long r2Length = long.Parse(m.Groups[4].Value);
-            var hex = m.Groups[5].Value.TrimEnd('0');
-            if (hex.Length % 2 == 1)
-                hex += "0";
+            var full = Convert.FromHexString(m.Groups[5].Value);
 
             string? signerSubject = null;
             DateTimeOffset? signingTime = null;
             bool intact = false;
             try
             {
-                var der = Convert.FromHexString(hex);
+                var der = full[..GetDerSequenceLength(full)];
                 var covered = new byte[r1Length + r2Length];
                 Array.Copy(pdf, r1Start, covered, 0, r1Length);
                 Array.Copy(pdf, r2Start, covered, r1Length, r2Length);
@@ -168,7 +166,7 @@ internal static partial class PdfSigner
                 cms.CheckSignature(verifySignatureOnly: true);
                 intact = true;
             }
-            catch (CryptographicException)
+            catch (Exception ex) when (ex is CryptographicException or ArgumentException or IndexOutOfRangeException)
             {
                 // Leaves intact = false; the signature is present but does not verify.
             }
@@ -188,6 +186,32 @@ internal static partial class PdfSigner
             });
         }
         return results;
+    }
+
+    /// <summary>
+    /// Computes the total byte length (header + content) of a DER-encoded ASN.1 SEQUENCE
+    /// starting at offset 0, so the real CMS blob can be sliced out of a zero-padded buffer
+    /// without guessing where padding starts (trailing zero bytes can legitimately be part
+    /// of the signature itself).
+    /// </summary>
+    private static int GetDerSequenceLength(byte[] data)
+    {
+        if (data.Length < 2 || data[0] != 0x30)
+            throw new ArgumentException("Not a DER-encoded SEQUENCE.", nameof(data));
+
+        byte first = data[1];
+        if (first < 0x80)
+            return 2 + first;
+
+        int lengthOctets = first & 0x7F;
+        if (lengthOctets == 0 || lengthOctets > 4 || data.Length < 2 + lengthOctets)
+            throw new ArgumentException("Unsupported DER length encoding.", nameof(data));
+
+        int contentLength = 0;
+        for (int i = 0; i < lengthOctets; i++)
+            contentLength = (contentLength << 8) | data[2 + i];
+
+        return 2 + lengthOctets + contentLength;
     }
 
     private static string FormatPdfDate(DateTimeOffset time)
