@@ -9,6 +9,7 @@ public sealed class PdfBuilder
 {
     private readonly SharpDocument _document = new();
     private bool _pdfA;
+    private TaggingSession? _tagging;
 
     internal PdfBuilder()
     {
@@ -22,6 +23,17 @@ public sealed class PdfBuilder
     public PdfBuilder AsPdfA()
     {
         _pdfA = true;
+        return this;
+    }
+
+    /// <summary>
+    /// Enables tagged-PDF output: layout elements marked with semantic roles (see
+    /// <see cref="Layout.Elements.SemanticElement"/>) emit marked content, and a
+    /// structure tree is built on save.
+    /// </summary>
+    public PdfBuilder WithTagging()
+    {
+        _tagging ??= new TaggingSession();
         return this;
     }
 
@@ -57,13 +69,13 @@ public sealed class PdfBuilder
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageWidth);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageHeight);
         ArgumentOutOfRangeException.ThrowIfNegative(margin);
-        LayoutRenderer.Render(_document, content, pageWidth, pageHeight, margin);
+        LayoutRenderer.Render(_document, content, pageWidth, pageHeight, margin, _tagging);
         return this;
     }
 
     /// <summary>Renders a page layout (header/content/footer slots) into the document.</summary>
     internal int AddPageLayout(PageLayout layout, PageContext context) =>
-        LayoutRenderer.Render(_document, layout, context);
+        LayoutRenderer.Render(_document, layout, context, _tagging);
 
     /// <summary>
     /// Configures the document outline (bookmarks). Call after the pages the bookmarks
@@ -89,6 +101,8 @@ public sealed class PdfBuilder
     public byte[] ToBytes()
     {
         EnsureAtLeastOnePage();
+        if (_tagging is { } tagging)
+            StructTreeBuilder.Apply(_document, tagging);
         if (_pdfA)
             PdfAConformance.Apply(_document);
         using var ms = new MemoryStream();

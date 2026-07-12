@@ -12,6 +12,7 @@ public sealed class DocumentBuilder
 {
     private readonly IReadOnlyList<PageDescriptor> _pages;
     private bool _pdfA;
+    private bool _tagged;
 
     internal DocumentBuilder(IReadOnlyList<PageDescriptor> pages) => _pages = pages;
 
@@ -22,6 +23,16 @@ public sealed class DocumentBuilder
     public DocumentBuilder AsPdfA()
     {
         _pdfA = true;
+        return this;
+    }
+
+    /// <summary>
+    /// Enables tagged-PDF output: content marked with semantic roles (<c>.Role(...)</c>,
+    /// <c>.Heading(...)</c>, image alt text) produces a structure tree for accessibility.
+    /// </summary>
+    public DocumentBuilder WithTagging()
+    {
+        _tagged = true;
         return this;
     }
 
@@ -40,6 +51,8 @@ public sealed class DocumentBuilder
         var builder = PdfFile.Create();
         if (_pdfA)
             builder.AsPdfA();
+        if (_tagged)
+            builder.WithTagging();
         Render(builder, new PageContext { TotalPages = totalPages });
         return builder;
     }

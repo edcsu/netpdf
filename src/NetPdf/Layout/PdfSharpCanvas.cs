@@ -5,22 +5,46 @@ using PdfSharp.Pdf;
 namespace NetPdf.Layout;
 
 /// <summary>PDFsharp-backed canvas drawing onto one page's <see cref="XGraphics"/>.</summary>
-internal sealed class PdfSharpCanvas : ICanvas
+internal sealed class PdfSharpCanvas : ICanvas, ITagCanvas
 {
     private readonly XGraphics _gfx;
     private readonly PdfPage? _page;
+    private readonly TaggingSession? _tagging;
     private readonly Stack<XGraphicsState> _states = new();
     private readonly Stack<TextStyle> _defaultStyles = new();
     private readonly Dictionary<TextStyle, XFont> _fonts = [];
     private readonly Dictionary<ImageSource, XImage> _images = [];
 
-    internal PdfSharpCanvas(XGraphics gfx, PageContext? pageContext = null, PdfPage? page = null)
+    internal PdfSharpCanvas(XGraphics gfx, PageContext? pageContext = null, PdfPage? page = null,
+        TaggingSession? tagging = null)
     {
         SystemFontResolver.Register();
         _gfx = gfx;
         _page = page;
+        _tagging = tagging;
         PageContext = pageContext ?? new PageContext();
         _defaultStyles.Push(new TextStyle());
+    }
+
+    /// <inheritdoc />
+    public int BeginMarkedContent(SemanticRole role, string? altText)
+    {
+        if (_tagging is null || _page is null)
+            return -1;
+        var mcid = _tagging.Begin(_page, role, altText);
+        // Sentinel comment; replaced by a real BDC operator in a post-pass (XGraphics has
+        // no marked-content API).
+        _gfx.WriteComment($"MCB {mcid} {TaggingSession.StructureType(role)}");
+        return mcid;
+    }
+
+    /// <inheritdoc />
+    public void EndMarkedContent()
+    {
+        if (_tagging is null || _page is null)
+            return;
+        _gfx.WriteComment("MCE");
+        _tagging.End();
     }
 
     public PageContext PageContext { get; }
