@@ -84,6 +84,31 @@ public sealed class ContainerDescriptor
     /// <summary>Shifts the content's drawing position without affecting layout.</summary>
     public ContainerDescriptor Offset(double x, double y) => Wrap(new OffsetElement { OffsetX = x, OffsetY = y });
 
+    /// <summary>
+    /// Rotates the content clockwise by the given angle around the slot's top-left corner.
+    /// Visual only: the measured size is unchanged, so rotated content may overflow the slot.
+    /// </summary>
+    public ContainerDescriptor Rotate(double degrees) => Wrap(new RotateElement { Degrees = degrees });
+
+    /// <summary>Scales the content uniformly; scaling affects the measured size.</summary>
+    public ContainerDescriptor Scale(double factor) => Scale(factor, factor);
+
+    /// <summary>Scales the content per axis; scaling affects the measured size. Negative factors mirror.</summary>
+    public ContainerDescriptor Scale(double scaleX, double scaleY) =>
+        Wrap(new ScaleElement { ScaleX = scaleX, ScaleY = scaleY });
+
+    /// <summary>Mirrors the content horizontally within its slot.</summary>
+    public ContainerDescriptor FlipHorizontal() => Scale(-1, 1);
+
+    /// <summary>Mirrors the content vertically within its slot.</summary>
+    public ContainerDescriptor FlipVertical() => Scale(1, -1);
+
+    /// <summary>Mirrors the content both horizontally and vertically (180° turn).</summary>
+    public ContainerDescriptor FlipOver() => Scale(-1, -1);
+
+    /// <summary>Shrinks the content uniformly until it fits entirely in the offered space.</summary>
+    public ContainerDescriptor ScaleToFit() => Wrap(new ScaleToFitElement());
+
     /// <summary>Paints a solid background behind the content.</summary>
     public ContainerDescriptor Background(System.Drawing.Color color, double cornerRadius = 0) =>
         Wrap(new BackgroundElement { Color = color, CornerRadius = cornerRadius });
