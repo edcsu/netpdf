@@ -45,7 +45,7 @@ internal static class LayoutRenderer
             page.Height = XUnit.FromPoint(layout.PageHeight);
 
             using var gfx = XGraphics.FromPdfPage(page);
-            var canvas = new PdfSharpCanvas(gfx, context);
+            var canvas = new PdfSharpCanvas(gfx, context, page);
             canvas.Translate(layout.MarginLeft, layout.MarginTop);
 
             var slotSize = new Size(contentWidth, contentHeight);

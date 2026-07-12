@@ -9,6 +9,18 @@ public interface ICanvas
     /// <summary>Page numbering state for the page being rendered.</summary>
     PageContext PageContext { get; }
 
+    /// <summary>
+    /// The ambient default text style that text elements merge their own style into.
+    /// Managed as a stack by <c>DefaultTextStyle</c> containers.
+    /// </summary>
+    TextStyle DefaultTextStyle { get; }
+
+    /// <summary>Pushes a default text style; unset properties inherit from the previous default.</summary>
+    void PushDefaultTextStyle(TextStyle style);
+
+    /// <summary>Pops the most recently pushed default text style.</summary>
+    void PopDefaultTextStyle();
+
     /// <summary>Draws a single line of text with its top-left corner at (<paramref name="x"/>, <paramref name="y"/>).</summary>
     void DrawText(string text, TextStyle style, double x, double y);
 
@@ -31,6 +43,12 @@ public interface ICanvas
     void DrawRectangle(double x, double y, double width, double height,
         System.Drawing.Color? fill, System.Drawing.Color? stroke = null,
         double strokeThickness = 1, double cornerRadius = 0);
+
+    /// <summary>
+    /// Adds a clickable web-link annotation over the given rectangle (coordinates relative
+    /// to the current origin). Canvases without page access may ignore this.
+    /// </summary>
+    void DrawLink(double x, double y, double width, double height, string url);
 
     /// <summary>Moves the origin by the given offset.</summary>
     void Translate(double dx, double dy);
