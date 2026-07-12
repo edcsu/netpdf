@@ -123,6 +123,12 @@ public class LayoutTests
         public PageContext PageContext { get; } = new();
         public void DrawText(string text, TextStyle style, double x, double y) { }
         public Size MeasureText(string text, TextStyle style) => new(text.Length * 5, 10);
+        public Size MeasureImage(ImageSource image) => new(100, 50);
+        public void DrawImage(ImageSource image, double x, double y, double width, double height) { }
+        public void DrawLine(double x1, double y1, double x2, double y2, System.Drawing.Color color, double thickness) { }
+        public void DrawRectangle(double x, double y, double width, double height,
+            System.Drawing.Color? fill, System.Drawing.Color? stroke = null,
+            double strokeThickness = 1, double cornerRadius = 0) { }
         public void Translate(double dx, double dy) { }
         public void Save() { }
         public void Restore() { }
