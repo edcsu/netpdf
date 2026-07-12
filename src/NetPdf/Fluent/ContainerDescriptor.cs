@@ -248,6 +248,15 @@ public sealed class ContainerDescriptor
         _assign(row);
     }
 
+    /// <summary>Places a table with fixed column widths, cell spans and repeating header/footer rows.</summary>
+    public void Table(Action<TableDescriptor> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        var descriptor = new TableDescriptor();
+        configure(descriptor);
+        _assign(descriptor.Build());
+    }
+
     /// <summary>Places stacked layers in the slot.</summary>
     public void Layers(Action<LayersDescriptor> configure)
     {
