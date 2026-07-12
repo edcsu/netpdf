@@ -5,7 +5,7 @@ namespace NetPdf.Fluent;
 
 /// <summary>
 /// Configures one content slot. Chainable calls wrap the slot in sizing/position containers;
-/// terminal calls (<see cref="Text"/>, <see cref="Column"/>, …) place the slot's content.
+/// terminal calls (<see cref="Text(string, TextStyle?)"/>, <see cref="Column"/>, …) place the slot's content.
 /// </summary>
 public sealed class ContainerDescriptor
 {
@@ -104,8 +104,64 @@ public sealed class ContainerDescriptor
             Color = color ?? System.Drawing.Color.Black,
         });
 
+    /// <summary>Keeps the content on one page, deferring it to the next page instead of splitting it.</summary>
+    public ContainerDescriptor ShowEntire() => Wrap(new ShowEntireElement());
+
+    /// <summary>
+    /// Starts the content on the next page unless at least <paramref name="minHeight"/> points
+    /// of height remain on the current page.
+    /// </summary>
+    public ContainerDescriptor EnsureSpace(double minHeight = 150) =>
+        Wrap(new EnsureSpaceElement { MinHeight = minHeight });
+
+    /// <summary>Renders the content only once; afterwards it occupies no space (for repeated slots).</summary>
+    public ContainerDescriptor ShowOnce() => Wrap(new ShowOnceElement());
+
+    /// <summary>Hides the content the first time this slot is rendered (for repeated slots).</summary>
+    public ContainerDescriptor SkipOnce() => Wrap(new SkipOnceElement());
+
+    /// <summary>Renders the content only when <paramref name="condition"/> is true.</summary>
+    public ContainerDescriptor ShowIf(bool condition) => Wrap(new ShowIfElement { Condition = condition });
+
+    /// <summary>Renders only what fits on the current page and discards the remainder.</summary>
+    public ContainerDescriptor StopPaging() => Wrap(new StopPagingElement());
+
+    /// <summary>Forces following content to start on the next page.</summary>
+    public void PageBreak() => _assign(new PageBreakElement());
+
+    /// <summary>
+    /// Renders the described content again on every page while the surrounding context keeps
+    /// paginating. Must be bounded (e.g. combined with <see cref="StopPaging"/>).
+    /// </summary>
+    public void Repeat(Action<ContainerDescriptor> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        _assign(new RepeatElement(() =>
+        {
+            IElement child = new EmptyElement();
+            configure(new ContainerDescriptor(e => child = e));
+            return child;
+        }));
+    }
+
+    /// <summary>Applies a default text style to all text inside the slot.</summary>
+    public ContainerDescriptor DefaultTextStyle(TextStyle style)
+    {
+        ArgumentNullException.ThrowIfNull(style);
+        return Wrap(new DefaultTextStyleElement { Style = style });
+    }
+
     /// <summary>Places word-wrapping text in the slot.</summary>
     public void Text(string text, TextStyle? style = null) => _assign(new TextElement(text, style));
+
+    /// <summary>Places a rich text block composed of styled spans in the slot.</summary>
+    public void Text(Action<TextDescriptor> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        var descriptor = new TextDescriptor();
+        configure(descriptor);
+        _assign(descriptor.Build());
+    }
 
     /// <summary>
     /// Places page-number text in the slot; <c>{number}</c> is the current page and
@@ -167,6 +223,36 @@ public sealed class ContainerDescriptor
         var layers = new LayersElement();
         configure(new LayersDescriptor(layers));
         _assign(layers);
+    }
+
+    /// <summary>
+    /// Places content with before/after slots repeated above and below it on every page
+    /// the content spans.
+    /// </summary>
+    public void Decoration(Action<DecorationDescriptor> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        var descriptor = new DecorationDescriptor();
+        configure(descriptor);
+        _assign(descriptor.Build());
+    }
+
+    /// <summary>Places items flowed horizontally with wrapping, like words in a paragraph.</summary>
+    public void Inlined(Action<InlinedDescriptor> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        var inlined = new InlinedElement();
+        configure(new InlinedDescriptor(inlined));
+        _assign(inlined);
+    }
+
+    /// <summary>Places a bulleted or numbered list in the slot.</summary>
+    public void List(Action<ListDescriptor> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        var descriptor = new ListDescriptor();
+        configure(descriptor);
+        _assign(descriptor.Build());
     }
 
     /// <summary>Places a custom element in the slot.</summary>

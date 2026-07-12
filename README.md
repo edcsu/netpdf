@@ -74,6 +74,34 @@ Containers compose with chainable calls: `Padding`, `Width`/`Height` (plus min/m
 `AlignCenter`/`AlignMiddle`/…, `AspectRatio`, `Extend`, `Shrink`, `Unconstrained`, and `Offset`.
 Custom `IElement` implementations plug in via `.Element(...)`.
 
+Content flow is controlled per block: `ShowEntire` keeps a block on one page, `EnsureSpace(pt)`
+requires a minimum height before starting, `PageBreak()` forces a new page, `StopPaging`
+truncates to the current page, and `ShowOnce`/`SkipOnce`/`ShowIf(bool)`/`Repeat(...)` control
+repeated slots. `DefaultTextStyle(style)` cascades text styling to everything inside.
+
+Rich text mixes styles, hyperlinks, and paragraph settings inside one flowing block, and
+`List`/`Inlined`/`Decoration` cover common structures:
+
+```csharp
+content.Column(column =>
+{
+    column.Item().Text(text =>
+    {
+        text.LineHeight(1.4);
+        text.Span("NetPdf ").Bold();
+        text.Span("builds rich paragraphs — ");
+        text.Hyperlink("learn more", "https://example.com");
+        text.Span(".");
+    });
+    column.Item().List(list =>
+    {
+        list.Ordered().Spacing(4);
+        list.Item().Text("First point");
+        list.Item().Text("Second point");
+    });
+});
+```
+
 ## Read a PDF
 
 ```csharp

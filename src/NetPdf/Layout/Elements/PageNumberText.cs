@@ -8,20 +8,20 @@ namespace NetPdf.Layout.Elements;
 public sealed class PageNumberText : IElement
 {
     private readonly string _format;
-    private readonly TextStyle _style;
+    private readonly TextStyle? _style;
 
     /// <summary>Creates the element with a format string (e.g. <c>"Page {number} of {total}"</c>) and style.</summary>
     public PageNumberText(string format, TextStyle? style = null)
     {
         ArgumentNullException.ThrowIfNull(format);
         _format = format;
-        _style = style ?? new TextStyle();
+        _style = style;
     }
 
     /// <inheritdoc />
     public SpacePlan Measure(ICanvas canvas, Size availableSpace)
     {
-        var size = canvas.MeasureText(Format(canvas.PageContext), _style);
+        var size = canvas.MeasureText(Format(canvas.PageContext), EffectiveStyle(canvas));
         return size.Width > availableSpace.Width || size.Height > availableSpace.Height
             ? SpacePlan.Wrap()
             : SpacePlan.FullRender(size);
@@ -29,7 +29,10 @@ public sealed class PageNumberText : IElement
 
     /// <inheritdoc />
     public void Draw(ICanvas canvas, Size availableSpace) =>
-        canvas.DrawText(Format(canvas.PageContext), _style, 0, 0);
+        canvas.DrawText(Format(canvas.PageContext), EffectiveStyle(canvas), 0, 0);
+
+    private TextStyle EffectiveStyle(ICanvas canvas) =>
+        (_style ?? new TextStyle()).Merge(canvas.DefaultTextStyle).Resolve();
 
     private string Format(PageContext context) => _format
         .Replace("{number}", context.CurrentPage.ToString())

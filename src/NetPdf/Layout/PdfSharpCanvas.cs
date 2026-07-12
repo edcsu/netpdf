@@ -1,5 +1,6 @@
 using NetPdf.Creation;
 using PdfSharp.Drawing;
+using PdfSharp.Pdf;
 
 namespace NetPdf.Layout;
 
@@ -7,31 +8,83 @@ namespace NetPdf.Layout;
 internal sealed class PdfSharpCanvas : ICanvas
 {
     private readonly XGraphics _gfx;
+    private readonly PdfPage? _page;
     private readonly Stack<XGraphicsState> _states = new();
+    private readonly Stack<TextStyle> _defaultStyles = new();
     private readonly Dictionary<TextStyle, XFont> _fonts = [];
     private readonly Dictionary<ImageSource, XImage> _images = [];
 
-    internal PdfSharpCanvas(XGraphics gfx, PageContext? pageContext = null)
+    internal PdfSharpCanvas(XGraphics gfx, PageContext? pageContext = null, PdfPage? page = null)
     {
         SystemFontResolver.Register();
         _gfx = gfx;
+        _page = page;
         PageContext = pageContext ?? new PageContext();
+        _defaultStyles.Push(new TextStyle());
     }
 
     public PageContext PageContext { get; }
 
+    public TextStyle DefaultTextStyle => _defaultStyles.Peek();
+
+    public void PushDefaultTextStyle(TextStyle style)
+    {
+        ArgumentNullException.ThrowIfNull(style);
+        _defaultStyles.Push(style.Merge(DefaultTextStyle));
+    }
+
+    public void PopDefaultTextStyle()
+    {
+        if (_defaultStyles.Count <= 1)
+            throw new InvalidOperationException("No default text style to pop.");
+        _defaultStyles.Pop();
+    }
+
+    public void DrawLink(double x, double y, double width, double height, string url)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(url);
+        // The annotation needs page coordinates; ignore links when no page is attached
+        // (e.g. measuring canvases).
+        _page?.AddWebLink(
+            new PdfRectangle(_gfx.Transformer.WorldToDefaultPage(new XRect(x, y, width, height))), url);
+    }
+
     public void DrawText(string text, TextStyle style, double x, double y)
     {
-        var font = GetFont(style);
-        var brush = new XSolidBrush(XColor.FromArgb(style.Color.R, style.Color.G, style.Color.B));
+        var resolved = style.Resolve();
+        var font = GetFont(resolved);
+        var color = resolved.Color!.Value;
+        var brush = new XSolidBrush(XColor.FromArgb(color.R, color.G, color.B));
         // DrawString positions text on the baseline; shift down so (x, y) is the top-left corner.
-        _gfx.DrawString(text, font, brush, new XPoint(x, y + font.GetHeight()));
+        var baseline = y + font.GetHeight();
+        var spacing = resolved.LetterSpacing!.Value;
+        if (spacing == 0)
+        {
+            _gfx.DrawString(text, font, brush, new XPoint(x, baseline));
+            return;
+        }
+
+        // Letter spacing: draw per character, advancing by the character width plus the spacing.
+        var cursor = x;
+        foreach (var ch in text)
+        {
+            var s = ch.ToString();
+            _gfx.DrawString(s, font, brush, new XPoint(cursor, baseline));
+            cursor += _gfx.MeasureString(s, font).Width + spacing;
+        }
     }
 
     public Size MeasureText(string text, TextStyle style)
     {
-        var font = GetFont(style);
-        var width = text.Length == 0 ? 0 : _gfx.MeasureString(text, font).Width;
+        var resolved = style.Resolve();
+        var font = GetFont(resolved);
+        if (text.Length == 0)
+            return new Size(0, font.GetHeight());
+
+        var spacing = resolved.LetterSpacing!.Value;
+        var width = spacing == 0
+            ? _gfx.MeasureString(text, font).Width
+            : text.Sum(ch => _gfx.MeasureString(ch.ToString(), font).Width + spacing) - spacing;
         return new Size(width, font.GetHeight());
     }
 
@@ -95,19 +148,20 @@ internal sealed class PdfSharpCanvas : ICanvas
     private static XSolidBrush MakeBrush(System.Drawing.Color color) =>
         new(XColor.FromArgb(color.R, color.G, color.B));
 
+    // Expects a resolved style (no null properties).
     private XFont GetFont(TextStyle style)
     {
         if (_fonts.TryGetValue(style, out var font))
             return font;
 
-        var face = (style.Bold, style.Italic) switch
-        {
-            (true, true) => XFontStyleEx.BoldItalic,
-            (true, false) => XFontStyleEx.Bold,
-            (false, true) => XFontStyleEx.Italic,
-            _ => XFontStyleEx.Regular,
-        };
-        font = new XFont(style.FontFamily, style.FontSize, face);
+        var face = XFontStyleEx.Regular;
+        if (style.Bold!.Value)
+            face |= XFontStyleEx.Bold;
+        if (style.Italic!.Value)
+            face |= XFontStyleEx.Italic;
+        if (style.Underline!.Value)
+            face |= XFontStyleEx.Underline;
+        font = new XFont(style.FontFamily!, style.FontSize!.Value, face);
         _fonts[style] = font;
         return font;
     }
