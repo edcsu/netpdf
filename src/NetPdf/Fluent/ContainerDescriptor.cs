@@ -84,6 +84,26 @@ public sealed class ContainerDescriptor
     /// <summary>Shifts the content's drawing position without affecting layout.</summary>
     public ContainerDescriptor Offset(double x, double y) => Wrap(new OffsetElement { OffsetX = x, OffsetY = y });
 
+    /// <summary>Paints a solid background behind the content.</summary>
+    public ContainerDescriptor Background(System.Drawing.Color color, double cornerRadius = 0) =>
+        Wrap(new BackgroundElement { Color = color, CornerRadius = cornerRadius });
+
+    /// <summary>Strokes a uniform border on the content's edges; it consumes no layout space.</summary>
+    public ContainerDescriptor Border(double thickness, System.Drawing.Color? color = null) =>
+        Border(thickness, thickness, thickness, thickness, color);
+
+    /// <summary>Strokes per-side borders on the content's edges; they consume no layout space.</summary>
+    public ContainerDescriptor Border(double left, double top, double right, double bottom,
+        System.Drawing.Color? color = null) =>
+        Wrap(new BorderElement
+        {
+            Left = left,
+            Top = top,
+            Right = right,
+            Bottom = bottom,
+            Color = color ?? System.Drawing.Color.Black,
+        });
+
     /// <summary>Places word-wrapping text in the slot.</summary>
     public void Text(string text, TextStyle? style = null) => _assign(new TextElement(text, style));
 
@@ -93,6 +113,34 @@ public sealed class ContainerDescriptor
     /// </summary>
     public void PageNumber(string format = "{number}", TextStyle? style = null) =>
         _assign(new PageNumberText(format, style));
+
+    /// <summary>Places an image in the slot, scaled to the available width.</summary>
+    public void Image(ImageSource source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        _assign(new ImageElement(source));
+    }
+
+    /// <summary>Places an image loaded from a file in the slot, scaled to the available width.</summary>
+    public void Image(string filePath) => Image(ImageSource.FromFile(filePath));
+
+    /// <summary>Places a horizontal rule spanning the available width.</summary>
+    public void LineHorizontal(double thickness = 1, System.Drawing.Color? color = null) =>
+        _assign(new LineElement
+        {
+            Orientation = LineOrientation.Horizontal,
+            Thickness = thickness,
+            Color = color ?? System.Drawing.Color.Black,
+        });
+
+    /// <summary>Places a vertical rule spanning the available height.</summary>
+    public void LineVertical(double thickness = 1, System.Drawing.Color? color = null) =>
+        _assign(new LineElement
+        {
+            Orientation = LineOrientation.Vertical,
+            Thickness = thickness,
+            Color = color ?? System.Drawing.Color.Black,
+        });
 
     /// <summary>Places a vertical stack of items in the slot.</summary>
     public void Column(Action<ColumnDescriptor> configure)
