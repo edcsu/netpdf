@@ -122,4 +122,48 @@ public class FluentApiTests
         using var pdf = PdfFile.Open(bytes);
         Assert.Contains("custom element", pdf.ExtractText());
     }
+
+    // 1x1 transparent PNG.
+    private static readonly byte[] OnePixelPng = Convert.FromBase64String(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==");
+
+    [Fact]
+    public void Background_border_line_and_image_render_to_a_valid_pdf()
+    {
+        var bytes = Document.Create(doc => doc
+                .Page(page => page
+                    .Content(content => content.Column(column =>
+                    {
+                        column.Item()
+                            .Background(System.Drawing.Color.LightYellow, cornerRadius: 4)
+                            .Border(1.5, System.Drawing.Color.DarkGray)
+                            .Padding(8)
+                            .Text("Decorated block");
+                        column.Item().LineHorizontal(2, System.Drawing.Color.Red);
+                        column.Item().Width(50).Image(ImageSource.FromBytes(OnePixelPng));
+                    }))))
+            .ToBytes();
+
+        using var pdf = PdfFile.Open(bytes);
+        Assert.Equal(1, pdf.PageCount);
+        Assert.Contains("Decorated block", pdf.ExtractText());
+    }
+
+    [Fact]
+    public void Background_and_border_around_paginating_text_span_pages()
+    {
+        var body = string.Join("\n", Enumerable.Range(1, 300).Select(i => $"Row {i}"));
+        var bytes = Document.Create(doc => doc
+                .Page(page => page
+                    .Content(content => content
+                        .Background(System.Drawing.Color.WhiteSmoke)
+                        .Border(1)
+                        .Text(body))))
+            .ToBytes();
+
+        using var pdf = PdfFile.Open(bytes);
+        Assert.True(pdf.PageCount > 1);
+        Assert.Contains("Row 1", pdf.ExtractText(0));
+        Assert.Contains("Row 300", pdf.ExtractText(pdf.PageCount - 1));
+    }
 }
