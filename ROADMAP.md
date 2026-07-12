@@ -40,9 +40,9 @@ Backend decision: render through PDFsharp `XGraphics` initially, reusing `System
 
 ## Phase 3 — Content flow & rich text
 
-- [ ] **Page-break controls** (M) — PageBreak, ShowEntire, EnsureSpace, ShowOnce, SkipOnce, ShowIf, Repeat, StopPaging
-- [ ] **Rich text** (L) — span-based text with mixed styles, style inheritance / DefaultTextStyle, paragraph style (line height, letter spacing), hyperlink spans
-- [ ] **Decoration, Inlined, List** (M)
+- [x] **Page-break controls** (M) — PageBreak, ShowEntire, EnsureSpace, ShowOnce, SkipOnce, ShowIf, Repeat, StopPaging
+- [x] **Rich text** (L) — span-based text with mixed styles, style inheritance / DefaultTextStyle, paragraph style (line height, letter spacing), hyperlink spans
+- [x] **Decoration, Inlined, List** (M)
 
 ## Phase 4 — Table and advanced visuals
 
