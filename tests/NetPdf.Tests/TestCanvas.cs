@@ -11,8 +11,21 @@ internal sealed class TestCanvas : ICanvas
     private double _originX;
     private double _originY;
     private readonly Stack<(double X, double Y)> _saved = new();
+    private readonly Stack<TextStyle> _defaultStyles = new([new TextStyle()]);
 
     public PageContext PageContext { get; } = new();
+
+    public TextStyle DefaultTextStyle => _defaultStyles.Peek();
+
+    public void PushDefaultTextStyle(TextStyle style) => _defaultStyles.Push(style.Merge(DefaultTextStyle));
+
+    public void PopDefaultTextStyle() => _defaultStyles.Pop();
+
+    /// <summary>Link annotations added so far, with rectangles in absolute coordinates.</summary>
+    public List<(double X, double Y, double Width, double Height, string Url)> Links { get; } = [];
+
+    public void DrawLink(double x, double y, double width, double height, string url) =>
+        Links.Add((_originX + x, _originY + y, width, height, url));
 
     /// <summary>Text drawn so far, with positions in absolute coordinates.</summary>
     public List<(string Text, double X, double Y)> DrawnText { get; } = [];
