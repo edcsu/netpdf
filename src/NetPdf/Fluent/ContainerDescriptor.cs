@@ -296,6 +296,26 @@ public sealed class ContainerDescriptor
         _assign(descriptor.Build());
     }
 
+    /// <summary>
+    /// Hands the raw canvas to <paramref name="draw"/> for custom drawing (charts, diagrams, …).
+    /// The slot takes the full offered space; combine with <see cref="Width(double)"/> and
+    /// <see cref="Height(double)"/> to bound it.
+    /// </summary>
+    public void Canvas(Action<Layout.ICanvas, Layout.Size> draw)
+    {
+        ArgumentNullException.ThrowIfNull(draw);
+        _assign(new CanvasElement(draw));
+    }
+
+    /// <summary>Places a QR code in the slot, scaled to the available width like an image.</summary>
+    public void QrCode(string content, int pixelSize = 256) =>
+        Image(Creation.BarcodeGenerator.GenerateQrCode(content, pixelSize));
+
+    /// <summary>Places a barcode in the slot, scaled to the available width like an image.</summary>
+    public void Barcode(string content, Creation.BarcodeFormat format,
+        int pixelWidth = 256, int pixelHeight = 256) =>
+        Image(Creation.BarcodeGenerator.Generate(content, format, pixelWidth, pixelHeight));
+
     /// <summary>Places a custom element in the slot.</summary>
     public void Element(IElement element)
     {
