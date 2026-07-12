@@ -9,6 +9,8 @@ NetPdf wraps three battle-tested, permissively-licensed libraries behind a singl
 | Create, merge, split, rotate, encrypt | [PDFsharp](https://github.com/empira/PDFsharp) | MIT |
 | Text & image extraction | [PdfPig](https://github.com/UglyToad/PdfPig) | Apache-2.0 |
 | Render pages to PNG | [PDFtoImage](https://github.com/sungaila/PDFtoImage) (PDFium) | MIT |
+| Barcodes & QR codes | [ZXing.Net](https://github.com/micjahn/ZXing.Net) | Apache-2.0 |
+| SVG rasterization | [Svg.Skia](https://github.com/wieslawsoltes/Svg.Skia) (SkiaSharp) | MIT |
 
 Targets `net8.0`, `net9.0`, and `net10.0`. Works on Windows, macOS, and Linux.
 
@@ -99,6 +101,47 @@ content.Column(column =>
         list.Item().Text("First point");
         list.Item().Text("Second point");
     });
+});
+```
+
+Tables have fixed column widths, cell spans, and header/footer rows that repeat on every page;
+a spanned cell never splits across a page break:
+
+```csharp
+content.Table(table =>
+{
+    table.ColumnsDefinition(columns =>
+    {
+        columns.ConstantColumn(120);
+        columns.RelativeColumn();
+    });
+    table.Header(header =>
+    {
+        header.Cell().Text("Name");
+        header.Cell().Text("Description");
+    });
+    table.Cell().Text("Item 1");
+    table.Cell().Text("First item");
+    table.Cell().Row(2).Column(1).RowSpan(2).Text("Spans two rows");
+});
+```
+
+Visual styling and transforms chain onto any container: `Background(color, cornerRadius)`,
+`Border(...)`, `Shadow(...)` (blur is approximated — PDF has no native blur), `Rotate(degrees)`,
+`Scale(x, y)`, `FlipHorizontal`/`FlipVertical`/`FlipOver`, and `ScaleToFit()` which shrinks
+content until it fits its slot. Layers accept a `zIndex` to control stacking order.
+
+QR codes, barcodes, and SVG render through the same image pipeline, and `Canvas` exposes raw
+drawing for charts and custom graphics:
+
+```csharp
+content.Column(column =>
+{
+    column.Item().Width(120).QrCode("https://example.com");
+    column.Item().Width(240).Barcode("NETPDF-12345", BarcodeFormat.Code128);
+    column.Item().Width(80).Svg("<svg …>…</svg>");             // rasterized at 2× by default
+    column.Item().Height(100).Canvas((canvas, size) =>
+        canvas.DrawLine(0, size.Height, size.Width, 0, Color.SteelBlue, 2));
 });
 ```
 

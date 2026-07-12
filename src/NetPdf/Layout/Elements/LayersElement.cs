@@ -7,11 +7,20 @@ namespace NetPdf.Layout.Elements;
 /// </summary>
 public sealed class LayersElement : IElement
 {
+    private readonly Dictionary<int, int> _zIndices = [];
+
     /// <summary>The stacked layers, drawn in order (first is the bottom).</summary>
     public IList<IElement> Layers { get; init; } = [];
 
     /// <summary>Index of the layer that drives measurement and pagination. Defaults to the first.</summary>
     public int PrimaryLayerIndex { get; set; }
+
+    /// <summary>
+    /// Assigns a z-index to the layer at <paramref name="layerIndex"/>. Layers draw in ascending
+    /// z-index (default 0); layers sharing a z-index keep their insertion order. The z-index only
+    /// orders siblings within this <see cref="LayersElement"/>.
+    /// </summary>
+    public void SetZIndex(int layerIndex, int zIndex) => _zIndices[layerIndex] = zIndex;
 
     /// <inheritdoc />
     public SpacePlan Measure(ICanvas canvas, Size availableSpace) =>
@@ -22,7 +31,7 @@ public sealed class LayersElement : IElement
     /// <inheritdoc />
     public void Draw(ICanvas canvas, Size availableSpace)
     {
-        for (var i = 0; i < Layers.Count; i++)
+        foreach (var i in DrawOrder())
         {
             if (i != PrimaryLayerIndex)
                 Layers[i].Measure(canvas, availableSpace);
@@ -31,4 +40,8 @@ public sealed class LayersElement : IElement
             canvas.Restore();
         }
     }
+
+    private IEnumerable<int> DrawOrder() =>
+        Enumerable.Range(0, Layers.Count)
+            .OrderBy(i => _zIndices.GetValueOrDefault(i)); // OrderBy is stable: ties keep insertion order
 }
