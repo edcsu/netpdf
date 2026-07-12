@@ -31,10 +31,10 @@ Independent items that fit the existing wrapper design. Each bullet maps cleanly
 The big investment; everything in Phases 3–4 depends on it.
 
 - [x] **Element tree core** (L) — `IElement` with a two-pass `Measure(availableSpace) → SpacePlan` / `Draw(canvas)` protocol and a render loop that paginates automatically
-- [ ] **Sizing & position containers** (M) — Width, Height, Padding, Alignment, AspectRatio, Extend, Shrink, Unconstrained, Offset
-- [ ] **Composition elements** (M) — Column, Row (constant/relative sizing), Layers
-- [ ] **Page slots** (M) — Header / Content / Footer repeated per page; page numbers via deferred text
-- [ ] **Fluent document API** (M) — `Document.Create(c => c.Page(p => …))` alongside the existing absolute-coordinate `PageBuilder` (no breaking changes)
+- [x] **Sizing & position containers** (M) — Width, Height, Padding, Alignment, AspectRatio, Extend, Shrink, Unconstrained, Offset
+- [x] **Composition elements** (M) — Column, Row (constant/relative sizing), Layers
+- [x] **Page slots** (M) — Header / Content / Footer repeated per page; page numbers via deferred text
+- [x] **Fluent document API** (M) — `Document.Create(c => c.Page(p => …))` alongside the existing absolute-coordinate `PageBuilder` (no breaking changes)
 
 Backend decision: render through PDFsharp `XGraphics` initially, reusing `SystemFontResolver`; revisit SkiaSharp only if text shaping or SVG demands it.
 

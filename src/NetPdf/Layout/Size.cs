@@ -20,4 +20,7 @@ public readonly struct Size
 
     /// <summary>A size with zero width and height.</summary>
     public static Size Zero => new(0, 0);
+
+    /// <summary>An effectively unlimited size, used to measure unconstrained content.</summary>
+    public static Size Max => new(1_000_000, 1_000_000);
 }

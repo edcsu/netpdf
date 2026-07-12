@@ -6,6 +6,9 @@ namespace NetPdf.Layout;
 /// </summary>
 public interface ICanvas
 {
+    /// <summary>Page numbering state for the page being rendered.</summary>
+    PageContext PageContext { get; }
+
     /// <summary>Draws a single line of text with its top-left corner at (<paramref name="x"/>, <paramref name="y"/>).</summary>
     void DrawText(string text, TextStyle style, double x, double y);
 
