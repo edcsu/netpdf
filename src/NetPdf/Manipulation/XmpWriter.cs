@@ -32,7 +32,7 @@ internal static partial class XmpWriter
         return update.Complete();
     }
 
-    internal static string GeneratePacket(PdfMetadata metadata)
+    internal static string GeneratePacket(PdfMetadata metadata, bool pdfAIdentification = false)
     {
         var sb = new StringBuilder();
         sb.Append("<?xpacket begin=\"﻿\" id=\"W5M0MpCehiHzreSzNTczkc9d\"?>");
@@ -40,7 +40,12 @@ internal static partial class XmpWriter
         sb.Append("<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">");
         sb.Append("<rdf:Description rdf:about=\"\"");
         sb.Append(" xmlns:dc=\"http://purl.org/dc/elements/1.1/\"");
-        sb.Append(" xmlns:pdf=\"http://ns.adobe.com/pdf/1.3/\">");
+        sb.Append(" xmlns:pdf=\"http://ns.adobe.com/pdf/1.3/\"");
+        if (pdfAIdentification)
+            sb.Append(" xmlns:pdfaid=\"http://www.aiim.org/pdfa/ns/id/\"");
+        sb.Append('>');
+        if (pdfAIdentification)
+            sb.Append("<pdfaid:part>2</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance>");
 
         if (metadata.Title is { } title)
             sb.Append($"<dc:title><rdf:Alt><rdf:li xml:lang=\"x-default\">{Escape(title)}</rdf:li></rdf:Alt></dc:title>");
