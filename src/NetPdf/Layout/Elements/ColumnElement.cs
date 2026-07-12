@@ -12,7 +12,7 @@ public sealed class ColumnElement : IElement
     public IList<IElement> Items { get; init; } = [];
 
     /// <summary>Vertical gap between consecutive items in points.</summary>
-    public double Spacing { get; init; }
+    public double Spacing { get; set; }
 
     /// <inheritdoc />
     public SpacePlan Measure(ICanvas canvas, Size availableSpace)

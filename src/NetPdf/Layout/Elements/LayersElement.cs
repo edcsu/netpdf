@@ -11,7 +11,7 @@ public sealed class LayersElement : IElement
     public IList<IElement> Layers { get; init; } = [];
 
     /// <summary>Index of the layer that drives measurement and pagination. Defaults to the first.</summary>
-    public int PrimaryLayerIndex { get; init; }
+    public int PrimaryLayerIndex { get; set; }
 
     /// <inheritdoc />
     public SpacePlan Measure(ICanvas canvas, Size availableSpace) =>

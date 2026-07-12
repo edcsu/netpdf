@@ -36,7 +36,7 @@ public sealed class RowElement : IElement
     public IList<RowItem> Items { get; init; } = [];
 
     /// <summary>Horizontal gap between consecutive items in points.</summary>
-    public double Spacing { get; init; }
+    public double Spacing { get; set; }
 
     /// <inheritdoc />
     public SpacePlan Measure(ICanvas canvas, Size availableSpace)
