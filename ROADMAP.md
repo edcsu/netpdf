@@ -58,7 +58,7 @@ Backend decision: render through PDFsharp `XGraphics` initially, reusing `System
 - [ ] **Digital signatures** (M)
 - [ ] **Right-to-left content direction & advanced text shaping** (L)
 - [ ] **Document linearization** (M)
-- [ ] **Debug aids** (S) — DebugArea-style overlays and layout diagnostics; a live previewer app is out of scope — `RenderPage` to PNG is the supported inspection path
+- [x] **Debug aids** (S) — `.Debug(label, color)` element overlays and `PageDescriptor.DebugOverlay()` slot outlines; a live previewer app is out of scope — `RenderPage` to PNG is the supported inspection path
 
 ## Out of scope
 

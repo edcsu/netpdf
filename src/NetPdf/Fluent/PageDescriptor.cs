@@ -16,6 +16,7 @@ public sealed class PageDescriptor
     private double _marginTop = 50;
     private double _marginRight = 50;
     private double _marginBottom = 50;
+    private bool _debugOverlay;
     private Action<ContainerDescriptor>? _header;
     private Action<ContainerDescriptor>? _content;
     private Action<ContainerDescriptor>? _footer;
@@ -54,6 +55,16 @@ public sealed class PageDescriptor
         return this;
     }
 
+    /// <summary>
+    /// Outlines the page's header, content, and footer slots with labeled debug overlays.
+    /// Inspect via <c>PdfDocument.RenderPage</c> to PNG. Consumes no layout space.
+    /// </summary>
+    public PageDescriptor DebugOverlay()
+    {
+        _debugOverlay = true;
+        return this;
+    }
+
     /// <summary>Configures the header repeated at the top of every page.</summary>
     public PageDescriptor Header(Action<ContainerDescriptor> configure)
     {
@@ -86,15 +97,17 @@ public sealed class PageDescriptor
         MarginTop = _marginTop,
         MarginRight = _marginRight,
         MarginBottom = _marginBottom,
-        Header = _header is null ? null : () => BuildSlot(_header),
-        Content = () => BuildSlot(_content),
-        Footer = _footer is null ? null : () => BuildSlot(_footer),
+        Header = _header is null ? null : () => BuildSlot(_header, "header"),
+        Content = () => BuildSlot(_content, "content"),
+        Footer = _footer is null ? null : () => BuildSlot(_footer, "footer"),
     };
 
-    private static IElement BuildSlot(Action<ContainerDescriptor>? configure)
+    private IElement BuildSlot(Action<ContainerDescriptor>? configure, string slotName)
     {
         IElement element = new EmptyElement();
         configure?.Invoke(new ContainerDescriptor(e => element = e));
-        return element;
+        return _debugOverlay
+            ? new DebugAreaElement { Label = slotName, Child = element }
+            : element;
     }
 }

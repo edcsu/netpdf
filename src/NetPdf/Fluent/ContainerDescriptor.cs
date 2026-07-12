@@ -136,6 +136,13 @@ public sealed class ContainerDescriptor
             Color = color ?? System.Drawing.Color.Black,
         });
 
+    /// <summary>
+    /// Overlays a colored outline and label on the content's area for layout debugging.
+    /// Inspect via <c>PdfDocument.RenderPage</c> to PNG. Consumes no layout space.
+    /// </summary>
+    public ContainerDescriptor Debug(string label = "", System.Drawing.Color? color = null) =>
+        Wrap(new DebugAreaElement { Label = label, Color = color });
+
     /// <summary>Keeps the content on one page, deferring it to the next page instead of splitting it.</summary>
     public ContainerDescriptor ShowEntire() => Wrap(new ShowEntireElement());
 
