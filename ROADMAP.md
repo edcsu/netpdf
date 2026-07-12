@@ -54,11 +54,11 @@ Backend decision: render through PDFsharp `XGraphics` initially, reusing `System
 
 ## Phase 5 — Compliance & long tail
 
-- [ ] **Accessibility (tagged PDF) and PDF/A conformance** (L)
-- [ ] **Digital signatures** (M)
-- [ ] **Right-to-left content direction & advanced text shaping** (L)
-- [ ] **Document linearization** (M)
-- [ ] **Debug aids** (S) — DebugArea-style overlays and layout diagnostics; a live previewer app is out of scope — `RenderPage` to PNG is the supported inspection path
+- [x] **Accessibility (tagged PDF) and PDF/A conformance** (L) — `WithTagging()` builds a structure tree from semantic roles (`.Role()`, `.Heading(n)`, image alt text) via sentinel comments post-processed into BDC/EMC operators; `AsPdfA()` targets PDF/A-2b with a generated sRGB output intent and pdfaid XMP
+- [x] **Digital signatures** (M) — detached PKCS#7 via `Sign(X509Certificate2)` as an incremental update with an invisible signature field (introduces a minimal AcroForm); `GetSignatures()` verifies integrity
+- [x] **Right-to-left content direction & advanced text shaping** (L) — `ContentFromRightToLeft()` on pages/containers; pragmatic UAX #9 bidi reordering, contextual Arabic shaping via presentation forms and lam-alef ligatures, mirrored rows/inlined items (full HarfBuzz-grade shaping for Indic scripts deferred)
+- [x] **Document linearization** (M) — `Linearize()` rewrites first-page objects first with a linearization dictionary and hint stream; hint tables are simplified but structurally valid (the practical benefit is fast-web-view ordering)
+- [x] **Debug aids** (S) — `.Debug(label, color)` element overlays and `PageDescriptor.DebugOverlay()` slot outlines; a live previewer app is out of scope — `RenderPage` to PNG is the supported inspection path
 
 ## Out of scope
 

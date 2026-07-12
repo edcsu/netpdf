@@ -78,23 +78,28 @@ public sealed class RowElement : IElement
 
         _finished ??= new bool[Items.Count];
         var widths = AllocateWidths(availableSpace.Width);
-        canvas.Save();
+        var rtl = canvas.Direction == ContentDirection.RightToLeft;
+        var x = 0.0;
         for (var i = 0; i < Items.Count; i++)
         {
+            // Right-to-left mirrors the cells: the first item lands at the right edge.
+            var drawX = rtl ? availableSpace.Width - x - widths[i] : x;
             if (!_finished[i])
             {
                 var itemSpace = new Size(widths[i], availableSpace.Height);
                 var plan = Items[i].Element.Measure(canvas, itemSpace);
                 if (plan.Type != SpacePlanType.Wrap)
                 {
+                    canvas.Save();
+                    canvas.Translate(drawX, 0);
                     Items[i].Element.Draw(canvas, itemSpace);
+                    canvas.Restore();
                     if (plan.Type == SpacePlanType.FullRender)
                         _finished[i] = true;
                 }
             }
-            canvas.Translate(widths[i] + Spacing, 0);
+            x += widths[i] + Spacing;
         }
-        canvas.Restore();
     }
 
     private double[] AllocateWidths(double availableWidth)

@@ -52,6 +52,14 @@ internal sealed class TestCanvas : ICanvas
 
     public void PopDefaultTextStyle() => _defaultStyles.Pop();
 
+    private readonly Stack<ContentDirection> _directions = new([ContentDirection.LeftToRight]);
+
+    public ContentDirection Direction => _directions.Peek();
+
+    public void PushDirection(ContentDirection direction) => _directions.Push(direction);
+
+    public void PopDirection() => _directions.Pop();
+
     /// <summary>Link annotations added so far, with rectangles in absolute coordinates.</summary>
     public List<(double X, double Y, double Width, double Height, string Url)> Links { get; } = [];
 
