@@ -212,6 +212,12 @@ public sealed class ContainerDescriptor
     /// <summary>Places an image loaded from a file in the slot, scaled to the available width.</summary>
     public void Image(string filePath) => Image(ImageSource.FromFile(filePath));
 
+    /// <summary>
+    /// Places an SVG in the slot, rasterized to a PNG at <paramref name="scale"/>× its intrinsic
+    /// size and scaled to the available width like an image. Output is raster, not vector.
+    /// </summary>
+    public void Svg(string markup, double scale = 2) => Image(ImageSource.FromSvg(markup, scale));
+
     /// <summary>Places a horizontal rule spanning the available width.</summary>
     public void LineHorizontal(double thickness = 1, System.Drawing.Color? color = null) =>
         _assign(new LineElement
