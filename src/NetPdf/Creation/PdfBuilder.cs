@@ -8,10 +8,33 @@ namespace NetPdf.Creation;
 public sealed class PdfBuilder
 {
     private readonly SharpDocument _document = new();
+    private bool _pdfA;
+    private TaggingSession? _tagging;
 
     internal PdfBuilder()
     {
         SystemFontResolver.Register();
+    }
+
+    /// <summary>
+    /// Targets PDF/A-2b conformance: an sRGB output intent is embedded, the version is
+    /// set to PDF 1.7, and the PDF/A identification XMP packet is appended on save.
+    /// </summary>
+    public PdfBuilder AsPdfA()
+    {
+        _pdfA = true;
+        return this;
+    }
+
+    /// <summary>
+    /// Enables tagged-PDF output: layout elements marked with semantic roles (see
+    /// <see cref="Layout.Elements.SemanticElement"/>) emit marked content, and a
+    /// structure tree is built on save.
+    /// </summary>
+    public PdfBuilder WithTagging()
+    {
+        _tagging ??= new TaggingSession();
+        return this;
     }
 
     /// <summary>Sets document metadata (title, author, etc.).</summary>
@@ -46,13 +69,13 @@ public sealed class PdfBuilder
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageWidth);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageHeight);
         ArgumentOutOfRangeException.ThrowIfNegative(margin);
-        LayoutRenderer.Render(_document, content, pageWidth, pageHeight, margin);
+        LayoutRenderer.Render(_document, content, pageWidth, pageHeight, margin, _tagging);
         return this;
     }
 
     /// <summary>Renders a page layout (header/content/footer slots) into the document.</summary>
     internal int AddPageLayout(PageLayout layout, PageContext context) =>
-        LayoutRenderer.Render(_document, layout, context);
+        LayoutRenderer.Render(_document, layout, context, _tagging);
 
     /// <summary>
     /// Configures the document outline (bookmarks). Call after the pages the bookmarks
@@ -65,25 +88,40 @@ public sealed class PdfBuilder
     }
 
     /// <summary>Writes the document to a file.</summary>
-    public void Save(string path)
-    {
-        EnsureAtLeastOnePage();
-        _document.Save(path);
-    }
+    public void Save(string path) => File.WriteAllBytes(path, ToBytes());
 
     /// <summary>Writes the document to a stream. The stream is left open.</summary>
     public void Save(Stream stream)
     {
-        EnsureAtLeastOnePage();
-        _document.Save(stream, false);
+        var bytes = ToBytes();
+        stream.Write(bytes, 0, bytes.Length);
     }
 
     /// <summary>Returns the document as a byte array.</summary>
     public byte[] ToBytes()
     {
+        EnsureAtLeastOnePage();
+        if (_tagging is { } tagging)
+            StructTreeBuilder.Apply(_document, tagging);
+        if (_pdfA)
+            PdfAConformance.Apply(_document);
         using var ms = new MemoryStream();
-        Save(ms);
-        return ms.ToArray();
+        _document.Save(ms, false);
+        var bytes = ms.ToArray();
+        if (_pdfA)
+        {
+            // The identification packet must go in after the save, because PDFsharp
+            // regenerates /Metadata from the Info dictionary on every save.
+            var packet = Manipulation.XmpWriter.GeneratePacket(
+                new Reading.PdfMetadata
+                {
+                    Title = _document.Info.Title is { Length: > 0 } t ? t : null,
+                    Author = _document.Info.Author is { Length: > 0 } a ? a : null,
+                },
+                pdfAIdentification: true);
+            bytes = Manipulation.XmpWriter.SetXmp(bytes, packet);
+        }
+        return bytes;
     }
 
     private void EnsureAtLeastOnePage()

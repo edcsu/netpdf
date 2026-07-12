@@ -136,6 +136,42 @@ public sealed class ContainerDescriptor
             Color = color ?? System.Drawing.Color.Black,
         });
 
+    /// <summary>
+    /// Lays out the content right-to-left: text defaults to right alignment with
+    /// bidirectional reordering and Arabic shaping, and rows/inlined items mirror.
+    /// </summary>
+    public ContainerDescriptor ContentFromRightToLeft() =>
+        Wrap(new ContentDirectionElement { Direction = ContentDirection.RightToLeft });
+
+    /// <summary>Lays out the content left-to-right (overriding an outer right-to-left scope).</summary>
+    public ContainerDescriptor ContentFromLeftToRight() =>
+        Wrap(new ContentDirectionElement { Direction = ContentDirection.LeftToRight });
+
+    /// <summary>
+    /// Marks the content with a semantic role for tagged-PDF output (requires
+    /// <c>WithTagging()</c> on the document; a no-op otherwise).
+    /// </summary>
+    public ContainerDescriptor Role(SemanticRole role, string? altText = null) =>
+        Wrap(new SemanticElement { Role = role, AltText = altText });
+
+    /// <summary>Marks the content as a heading of the given level (1–6) for tagged-PDF output.</summary>
+    public ContainerDescriptor Heading(int level)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(level, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(level, 6);
+        return Role(SemanticRole.Heading1 + (level - 1));
+    }
+
+    /// <summary>Marks the content as a paragraph for tagged-PDF output.</summary>
+    public ContainerDescriptor Paragraph() => Role(SemanticRole.Paragraph);
+
+    /// <summary>
+    /// Overlays a colored outline and label on the content's area for layout debugging.
+    /// Inspect via <c>PdfDocument.RenderPage</c> to PNG. Consumes no layout space.
+    /// </summary>
+    public ContainerDescriptor Debug(string label = "", System.Drawing.Color? color = null) =>
+        Wrap(new DebugAreaElement { Label = label, Color = color });
+
     /// <summary>Keeps the content on one page, deferring it to the next page instead of splitting it.</summary>
     public ContainerDescriptor ShowEntire() => Wrap(new ShowEntireElement());
 
@@ -202,11 +238,18 @@ public sealed class ContainerDescriptor
     public void PageNumber(string format = "{number}", TextStyle? style = null) =>
         _assign(new PageNumberText(format, style));
 
-    /// <summary>Places an image in the slot, scaled to the available width.</summary>
-    public void Image(ImageSource source)
+    /// <summary>
+    /// Places an image in the slot, scaled to the available width. When
+    /// <paramref name="altText"/> is given, the image is tagged as a Figure with that
+    /// alternate text in tagged-PDF output.
+    /// </summary>
+    public void Image(ImageSource source, string? altText = null)
     {
         ArgumentNullException.ThrowIfNull(source);
-        _assign(new ImageElement(source));
+        IElement element = new ImageElement(source);
+        if (altText is not null)
+            element = new SemanticElement { Role = SemanticRole.Figure, AltText = altText, Child = element };
+        _assign(element);
     }
 
     /// <summary>Places an image loaded from a file in the slot, scaled to the available width.</summary>

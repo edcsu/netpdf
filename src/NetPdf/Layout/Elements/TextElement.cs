@@ -55,10 +55,14 @@ public sealed class TextElement : IElement
         var fitting = (int)Math.Floor(availableSpace.Height / lineHeight);
         var count = Math.Min(fitting, lines.Count - _lineIndex);
 
+        var rtl = canvas.Direction == ContentDirection.RightToLeft;
         var y = 0.0;
         for (var i = 0; i < count; i++)
         {
-            canvas.DrawText(lines[_lineIndex + i], style, 0, y);
+            var line = Text.BidiAlgorithm.ReorderVisual(lines[_lineIndex + i], canvas.Direction);
+            // RTL paragraphs align to the right edge of the offered space.
+            var x = rtl ? availableSpace.Width - canvas.MeasureText(line, style).Width : 0;
+            canvas.DrawText(line, style, x, y);
             y += lineHeight;
         }
 
@@ -78,7 +82,9 @@ public sealed class TextElement : IElement
             return _lines;
 
         var lines = new List<string>();
-        foreach (var paragraph in _text.Split('\n'))
+        // Contextual Arabic shaping happens before wrapping so measurements use the
+        // presentation-form glyphs that are actually drawn.
+        foreach (var paragraph in Text.ArabicShaper.Shape(_text).Split('\n'))
         {
             var words = paragraph.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (words.Length == 0)

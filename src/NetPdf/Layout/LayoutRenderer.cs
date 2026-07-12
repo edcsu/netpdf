@@ -9,7 +9,7 @@ internal static class LayoutRenderer
     private const int MaxPages = 1000;
 
     internal static void Render(SharpDocument document, IElement root,
-        double pageWidth, double pageHeight, double margin)
+        double pageWidth, double pageHeight, double margin, TaggingSession? tagging = null)
     {
         var layout = new PageLayout
         {
@@ -21,7 +21,7 @@ internal static class LayoutRenderer
             MarginBottom = margin,
             Content = () => root,
         };
-        Render(document, layout, new PageContext());
+        Render(document, layout, new PageContext(), tagging);
     }
 
     /// <summary>
@@ -29,7 +29,8 @@ internal static class LayoutRenderer
     /// page (each must fully fit), and the content element flows through the space between
     /// them until it is fully rendered. Returns the number of pages added.
     /// </summary>
-    internal static int Render(SharpDocument document, PageLayout layout, PageContext context)
+    internal static int Render(SharpDocument document, PageLayout layout, PageContext context,
+        TaggingSession? tagging = null)
     {
         var contentWidth = layout.PageWidth - layout.MarginLeft - layout.MarginRight;
         var contentHeight = layout.PageHeight - layout.MarginTop - layout.MarginBottom;
@@ -45,7 +46,7 @@ internal static class LayoutRenderer
             page.Height = XUnit.FromPoint(layout.PageHeight);
 
             using var gfx = XGraphics.FromPdfPage(page);
-            var canvas = new PdfSharpCanvas(gfx, context, page);
+            var canvas = new PdfSharpCanvas(gfx, context, page, tagging);
             canvas.Translate(layout.MarginLeft, layout.MarginTop);
 
             var slotSize = new Size(contentWidth, contentHeight);

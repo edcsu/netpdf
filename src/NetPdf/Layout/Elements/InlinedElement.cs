@@ -49,6 +49,7 @@ public sealed class InlinedElement : IElement
         var (rows, placed, _) = BuildRows(canvas, availableSpace);
 
         canvas.Save();
+        var rtl = canvas.Direction == ContentDirection.RightToLeft;
         var y = 0.0;
         foreach (var row in rows)
         {
@@ -56,10 +57,13 @@ public sealed class InlinedElement : IElement
             {
                 HorizontalAlignment.Center => (availableSpace.Width - row.Width) / 2,
                 HorizontalAlignment.Right => availableSpace.Width - row.Width,
-                _ => 0.0,
+                // Right-to-left rows fill from the right edge unless explicitly aligned.
+                _ => rtl ? availableSpace.Width - row.Width : 0.0,
             };
 
-            foreach (var (item, size) in row.Cells)
+            // Right-to-left mirrors the item order within each row.
+            var cells = rtl ? Enumerable.Reverse(row.Cells) : row.Cells;
+            foreach (var (item, size) in cells)
             {
                 var dy = VerticalAlignment switch
                 {

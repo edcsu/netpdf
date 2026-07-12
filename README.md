@@ -193,6 +193,45 @@ using var opened    = PdfFile.Open("locked.pdf", password: "secret");
 using var unlocked  = opened.Decrypt();                // remove encryption
 ```
 
+## Compliance & long tail
+
+```csharp
+// Tagged PDF (accessibility) + PDF/A-2b
+var bytes = Document.Create(doc => doc
+        .Page(page => page.Content(c => c.Column(col =>
+        {
+            col.Item().Heading(1).Text("Title");
+            col.Item().Paragraph().Text("Body text");
+            col.Item().Image(logoPng, altText: "Company logo");
+        }))))
+    .WithTagging()   // structure tree: headings, paragraphs, figures with alt text
+    .AsPdfA()        // sRGB output intent + pdfaid identification XMP
+    .ToBytes();
+
+// Right-to-left layout with bidi reordering and Arabic shaping
+Document.Create(doc => doc
+    .Page(page => page
+        .ContentFromRightToLeft()
+        .Content(c => c.Text("مرحبا بالعالم"))));
+// …or per container: c.ContentFromRightToLeft().Row(…)
+
+// Digital signature (detached PKCS#7) — always the LAST operation
+using var doc2   = PdfFile.Open(bytes);
+using var signed = doc2.Sign(certificate, new SignatureOptions { Reason = "Approved" });
+var sigs = signed.GetSignatures();   // SignerSubject, IsIntact, CoversWholeDocument
+
+// Linearization ("fast web view") — rewrites the file, so do it before XMP/signing
+using var fast = doc2.Linearize();
+
+// Layout debugging: outline any element, or all page slots, then render to PNG
+Document.Create(doc => doc
+    .Page(page => page
+        .DebugOverlay()                       // outlines header/content/footer
+        .Content(c => c.Debug("body").Text("…"))));
+```
+
+**Operation ordering:** manipulations → `Linearize()` → `WithXmpMetadata()` / `AsPdfA()` → `Sign()` last. Linearizing flattens prior incremental updates; any rewrite after signing invalidates the signature.
+
 ## View (render to image)
 
 ```csharp
@@ -208,6 +247,9 @@ var allPages = doc.RenderAllPages(dpi: 96);
 - Page indexes are 0-based everywhere; coordinates are PDF points (1/72 inch) from the top-left corner.
 - Fonts are resolved from the operating system's font directories on all platforms.
 - `Protect` uses AES-256 by default; pass `EncryptionAlgorithm.Rc4_128` only if a legacy reader requires it.
+- Rendering Arabic requires a font with presentation-form glyphs (e.g. Arial, Noto Naskh Arabic, Amiri).
+- Linearization writes simplified (structurally valid) hint tables; the practical benefit is first-page-first ordering.
+- Signature verification checks integrity only; certificate trust chains are not evaluated.
 
 ## License
 

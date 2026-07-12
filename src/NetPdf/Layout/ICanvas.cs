@@ -21,6 +21,22 @@ public interface ICanvas
     /// <summary>Pops the most recently pushed default text style.</summary>
     void PopDefaultTextStyle();
 
+    /// <summary>
+    /// The ambient content direction. Default implementations keep it left-to-right;
+    /// canvases supporting RTL layout override these three members.
+    /// </summary>
+    ContentDirection Direction => ContentDirection.LeftToRight;
+
+    /// <summary>Pushes a content direction (managed as a stack by direction containers).</summary>
+    void PushDirection(ContentDirection direction)
+    {
+    }
+
+    /// <summary>Pops the most recently pushed content direction.</summary>
+    void PopDirection()
+    {
+    }
+
     /// <summary>Draws a single line of text with its top-left corner at (<paramref name="x"/>, <paramref name="y"/>).</summary>
     void DrawText(string text, TextStyle style, double x, double y);
 
