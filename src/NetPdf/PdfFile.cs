@@ -17,6 +17,25 @@ public enum Rotation
     CounterClockwise90 = 270,
 }
 
+/// <summary>Optional details recorded in a digital signature (see <see cref="PdfDocument.Sign"/>).</summary>
+public sealed record SignatureOptions
+{
+    /// <summary>The reason for signing, e.g. "I approve this document".</summary>
+    public string? Reason { get; init; }
+
+    /// <summary>The physical location where signing took place.</summary>
+    public string? Location { get; init; }
+
+    /// <summary>Contact information for the signer.</summary>
+    public string? ContactInfo { get; init; }
+
+    /// <summary>The signer's display name; defaults to the certificate's simple name.</summary>
+    public string? Name { get; init; }
+
+    /// <summary>The claimed signing time; defaults to now.</summary>
+    public DateTimeOffset? SigningTime { get; init; }
+}
+
 /// <summary>Encryption algorithms for <see cref="PdfDocument.Protect"/>.</summary>
 public enum EncryptionAlgorithm
 {
@@ -182,6 +201,28 @@ public sealed class PdfDocument : IDisposable
     /// </summary>
     public PdfDocument WithGeneratedXmpMetadata() =>
         WithXmpMetadata(XmpWriter.GeneratePacket(Metadata));
+
+    /// <summary>
+    /// Returns a new document digitally signed with the given certificate: a detached
+    /// PKCS#7 signature appended as an incremental update with an invisible signature
+    /// field. Sign as the very last step — any later manipulation invalidates the
+    /// signature. Not supported on encrypted documents; call <see cref="Decrypt"/> first.
+    /// </summary>
+    public PdfDocument Sign(System.Security.Cryptography.X509Certificates.X509Certificate2 certificate,
+        SignatureOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(certificate);
+        if (_password is not null)
+            throw new InvalidOperationException(
+                "Signing an encrypted document is not supported. Call Decrypt() first.");
+        return new(PdfSigner.Sign(_bytes, certificate, options ?? new SignatureOptions()));
+    }
+
+    /// <summary>
+    /// The digital signatures present in the document, with integrity verification
+    /// (certificate trust chains are not evaluated).
+    /// </summary>
+    public IReadOnlyList<PdfSignatureInfo> GetSignatures() => PdfSigner.ReadSignatures(_bytes);
 
     /// <summary>Returns a new document with a file embedded under the given name.</summary>
     public PdfDocument AttachFile(string name, byte[] content)

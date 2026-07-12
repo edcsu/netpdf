@@ -55,7 +55,7 @@ Backend decision: render through PDFsharp `XGraphics` initially, reusing `System
 ## Phase 5 — Compliance & long tail
 
 - [ ] **Accessibility (tagged PDF) and PDF/A conformance** (L)
-- [ ] **Digital signatures** (M)
+- [x] **Digital signatures** (M) — detached PKCS#7 via `Sign(X509Certificate2)` as an incremental update with an invisible signature field (introduces a minimal AcroForm); `GetSignatures()` verifies integrity
 - [ ] **Right-to-left content direction & advanced text shaping** (L)
 - [ ] **Document linearization** (M)
 - [x] **Debug aids** (S) — `.Debug(label, color)` element overlays and `PageDescriptor.DebugOverlay()` slot outlines; a live previewer app is out of scope — `RenderPage` to PNG is the supported inspection path
