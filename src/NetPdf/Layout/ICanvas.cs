@@ -53,6 +53,12 @@ public interface ICanvas
     /// <summary>Moves the origin by the given offset.</summary>
     void Translate(double dx, double dy);
 
+    /// <summary>Rotates the coordinate system clockwise by the given angle in degrees around the current origin.</summary>
+    void Rotate(double degrees);
+
+    /// <summary>Scales the coordinate system around the current origin. Negative factors mirror the respective axis.</summary>
+    void Scale(double scaleX, double scaleY);
+
     /// <summary>Saves the current transformation state.</summary>
     void Save();
 

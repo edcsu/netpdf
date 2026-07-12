@@ -172,6 +172,8 @@ public class RichTextTests
             double strokeThickness = 1, double cornerRadius = 0) { }
         public void DrawLink(double x, double y, double width, double height, string url) { }
         public void Translate(double dx, double dy) { }
+        public void Rotate(double degrees) { }
+        public void Scale(double scaleX, double scaleY) { }
         public void Save() { }
         public void Restore() { }
     }

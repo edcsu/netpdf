@@ -46,11 +46,11 @@ Backend decision: render through PDFsharp `XGraphics` initially, reusing `System
 
 ## Phase 4 — Table and advanced visuals
 
-- [ ] **Table** (L) — column definitions, cell spans, header/footer rows repeating across pages
-- [ ] **Styled containers** (M) — borders, backgrounds, rounded corners, shadows
-- [ ] **Transforms** (M) — Rotate, Scale, ScaleToFit, Flip, Z-Index
-- [ ] **SVG rendering** (M) — plus shared images and image size optimization
-- [ ] **Barcodes / QR codes** (S) — via an optional integration (e.g. ZXing); charts documented as a canvas extension point rather than in-core
+- [x] **Table** (L) — column definitions, cell spans, header/footer rows repeating across pages; pagination happens between row bands, so a spanned cell never straddles a page break
+- [x] **Styled containers** (M) — borders, backgrounds, rounded corners, shadows (PDF has no native blur; blur is approximated with stepped translucent rectangles)
+- [x] **Transforms** (M) — Rotate (free rotation, visual-only; layout-aware 90° rotation deferred), Scale, ScaleToFit, Flip, Z-Index (orders siblings within one Layers slot; no global z-ordering)
+- [x] **SVG rendering** (M) — rasterized to PNG at a configurable scale via Svg.Skia (vector-fidelity output deferred); shared images work by reusing one `ImageSource` instance; image resampling / size optimization deferred to Phase 5
+- [x] **Barcodes / QR codes** (S) — in core via ZXing.Net (revised from "optional integration": ZXing.Net and Svg.Skia now ship as core dependencies); charts go through the `Canvas(Action<ICanvas, Size>)` extension point rather than in-core
 
 ## Phase 5 — Compliance & long tail
 

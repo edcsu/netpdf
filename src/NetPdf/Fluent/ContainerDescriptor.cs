@@ -84,9 +84,41 @@ public sealed class ContainerDescriptor
     /// <summary>Shifts the content's drawing position without affecting layout.</summary>
     public ContainerDescriptor Offset(double x, double y) => Wrap(new OffsetElement { OffsetX = x, OffsetY = y });
 
+    /// <summary>
+    /// Rotates the content clockwise by the given angle around the slot's top-left corner.
+    /// Visual only: the measured size is unchanged, so rotated content may overflow the slot.
+    /// </summary>
+    public ContainerDescriptor Rotate(double degrees) => Wrap(new RotateElement { Degrees = degrees });
+
+    /// <summary>Scales the content uniformly; scaling affects the measured size.</summary>
+    public ContainerDescriptor Scale(double factor) => Scale(factor, factor);
+
+    /// <summary>Scales the content per axis; scaling affects the measured size. Negative factors mirror.</summary>
+    public ContainerDescriptor Scale(double scaleX, double scaleY) =>
+        Wrap(new ScaleElement { ScaleX = scaleX, ScaleY = scaleY });
+
+    /// <summary>Mirrors the content horizontally within its slot.</summary>
+    public ContainerDescriptor FlipHorizontal() => Scale(-1, 1);
+
+    /// <summary>Mirrors the content vertically within its slot.</summary>
+    public ContainerDescriptor FlipVertical() => Scale(1, -1);
+
+    /// <summary>Mirrors the content both horizontally and vertically (180° turn).</summary>
+    public ContainerDescriptor FlipOver() => Scale(-1, -1);
+
+    /// <summary>Shrinks the content uniformly until it fits entirely in the offered space.</summary>
+    public ContainerDescriptor ScaleToFit() => Wrap(new ScaleToFitElement());
+
     /// <summary>Paints a solid background behind the content.</summary>
     public ContainerDescriptor Background(System.Drawing.Color color, double cornerRadius = 0) =>
         Wrap(new BackgroundElement { Color = color, CornerRadius = cornerRadius });
+
+    /// <summary>
+    /// Paints an approximated drop shadow behind the content. PDF has no native blur; see
+    /// <see cref="ShadowStyle"/> for how blur is approximated.
+    /// </summary>
+    public ContainerDescriptor Shadow(ShadowStyle? style = null) =>
+        Wrap(new ShadowElement { Style = style ?? new ShadowStyle() });
 
     /// <summary>Strokes a uniform border on the content's edges; it consumes no layout space.</summary>
     public ContainerDescriptor Border(double thickness, System.Drawing.Color? color = null) =>
@@ -180,6 +212,12 @@ public sealed class ContainerDescriptor
     /// <summary>Places an image loaded from a file in the slot, scaled to the available width.</summary>
     public void Image(string filePath) => Image(ImageSource.FromFile(filePath));
 
+    /// <summary>
+    /// Places an SVG in the slot, rasterized to a PNG at <paramref name="scale"/>× its intrinsic
+    /// size and scaled to the available width like an image. Output is raster, not vector.
+    /// </summary>
+    public void Svg(string markup, double scale = 2) => Image(ImageSource.FromSvg(markup, scale));
+
     /// <summary>Places a horizontal rule spanning the available width.</summary>
     public void LineHorizontal(double thickness = 1, System.Drawing.Color? color = null) =>
         _assign(new LineElement
@@ -214,6 +252,15 @@ public sealed class ContainerDescriptor
         var row = new RowElement();
         configure(new RowDescriptor(row));
         _assign(row);
+    }
+
+    /// <summary>Places a table with fixed column widths, cell spans and repeating header/footer rows.</summary>
+    public void Table(Action<TableDescriptor> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        var descriptor = new TableDescriptor();
+        configure(descriptor);
+        _assign(descriptor.Build());
     }
 
     /// <summary>Places stacked layers in the slot.</summary>
@@ -254,6 +301,26 @@ public sealed class ContainerDescriptor
         configure(descriptor);
         _assign(descriptor.Build());
     }
+
+    /// <summary>
+    /// Hands the raw canvas to <paramref name="draw"/> for custom drawing (charts, diagrams, …).
+    /// The slot takes the full offered space; combine with <see cref="Width(double)"/> and
+    /// <see cref="Height(double)"/> to bound it.
+    /// </summary>
+    public void Canvas(Action<Layout.ICanvas, Layout.Size> draw)
+    {
+        ArgumentNullException.ThrowIfNull(draw);
+        _assign(new CanvasElement(draw));
+    }
+
+    /// <summary>Places a QR code in the slot, scaled to the available width like an image.</summary>
+    public void QrCode(string content, int pixelSize = 256) =>
+        Image(Creation.BarcodeGenerator.GenerateQrCode(content, pixelSize));
+
+    /// <summary>Places a barcode in the slot, scaled to the available width like an image.</summary>
+    public void Barcode(string content, Creation.BarcodeFormat format,
+        int pixelWidth = 256, int pixelHeight = 256) =>
+        Image(Creation.BarcodeGenerator.Generate(content, format, pixelWidth, pixelHeight));
 
     /// <summary>Places a custom element in the slot.</summary>
     public void Element(IElement element)

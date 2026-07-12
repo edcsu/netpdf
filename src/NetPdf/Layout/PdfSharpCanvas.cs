@@ -25,6 +25,9 @@ internal sealed class PdfSharpCanvas : ICanvas
 
     public PageContext PageContext { get; }
 
+    /// <summary>Number of distinct images decoded so far; exposed for shared-image tests.</summary>
+    internal int CachedImageCount => _images.Count;
+
     public TextStyle DefaultTextStyle => _defaultStyles.Peek();
 
     public void PushDefaultTextStyle(TextStyle style)
@@ -123,6 +126,10 @@ internal sealed class PdfSharpCanvas : ICanvas
     }
 
     public void Translate(double dx, double dy) => _gfx.TranslateTransform(dx, dy);
+
+    public void Rotate(double degrees) => _gfx.RotateTransform(degrees);
+
+    public void Scale(double scaleX, double scaleY) => _gfx.ScaleTransform(scaleX, scaleY);
 
     public void Save() => _states.Push(_gfx.Save());
 
