@@ -135,6 +135,8 @@ public class LayoutTests
             System.Drawing.Color? fill, System.Drawing.Color? stroke = null,
             double strokeThickness = 1, double cornerRadius = 0) { }
         public void Translate(double dx, double dy) { }
+        public void Rotate(double degrees) { }
+        public void Scale(double scaleX, double scaleY) { }
         public void Save() { }
         public void Restore() { }
     }

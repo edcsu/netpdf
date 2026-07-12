@@ -124,6 +124,10 @@ internal sealed class PdfSharpCanvas : ICanvas
 
     public void Translate(double dx, double dy) => _gfx.TranslateTransform(dx, dy);
 
+    public void Rotate(double degrees) => _gfx.RotateTransform(degrees);
+
+    public void Scale(double scaleX, double scaleY) => _gfx.ScaleTransform(scaleX, scaleY);
+
     public void Save() => _states.Push(_gfx.Save());
 
     public void Restore() => _gfx.Restore(_states.Pop());
