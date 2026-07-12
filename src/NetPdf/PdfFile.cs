@@ -203,6 +203,21 @@ public sealed class PdfDocument : IDisposable
         WithXmpMetadata(XmpWriter.GeneratePacket(Metadata));
 
     /// <summary>
+    /// Returns a new document rewritten in linearized ("fast web view") form: first-page
+    /// objects are ordered first with a linearization dictionary and hint stream. Hint
+    /// tables are simplified but structurally valid. Rewriting flattens prior incremental
+    /// updates, so linearize before <see cref="WithXmpMetadata"/> and <see cref="Sign"/>.
+    /// Not supported on encrypted documents; call <see cref="Decrypt"/> first.
+    /// </summary>
+    public PdfDocument Linearize()
+    {
+        if (_password is not null)
+            throw new InvalidOperationException(
+                "Linearizing an encrypted document is not supported. Call Decrypt() first.");
+        return new(PdfLinearizer.Linearize(_bytes));
+    }
+
+    /// <summary>
     /// Returns a new document digitally signed with the given certificate: a detached
     /// PKCS#7 signature appended as an incremental update with an invisible signature
     /// field. Sign as the very last step — any later manipulation invalidates the
