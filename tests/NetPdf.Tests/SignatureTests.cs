@@ -8,13 +8,8 @@ namespace NetPdf.Tests;
 
 public class SignatureTests
 {
-    private static X509Certificate2 CreateTestCertificate()
-    {
-        using var rsa = RSA.Create(2048);
-        var request = new CertificateRequest("CN=NetPdf Test Signer", rsa,
-            HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-        return request.CreateSelfSigned(DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddDays(1));
-    }
+    private static X509Certificate2 CreateTestCertificate() =>
+        TestCertificates.CreateEphemeral("CN=NetPdf Test Signer");
 
     private static byte[] BuildSamplePdf() =>
         Document.Create(doc => doc
