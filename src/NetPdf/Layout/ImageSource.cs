@@ -3,6 +3,9 @@ namespace NetPdf.Layout;
 /// <summary>
 /// An image payload for layout elements, decoupled from the rendering backend. The canvas decodes
 /// the bytes and reports the intrinsic size via <see cref="ICanvas.MeasureImage"/>.
+/// Images are cached per <see cref="ImageSource"/> instance: reusing one instance across many
+/// draw calls (or pages) embeds the image data in the document only once, so create the instance
+/// once and share it rather than re-reading the same file per draw.
 /// </summary>
 public sealed class ImageSource
 {

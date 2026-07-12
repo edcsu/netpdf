@@ -25,6 +25,9 @@ internal sealed class PdfSharpCanvas : ICanvas
 
     public PageContext PageContext { get; }
 
+    /// <summary>Number of distinct images decoded so far; exposed for shared-image tests.</summary>
+    internal int CachedImageCount => _images.Count;
+
     public TextStyle DefaultTextStyle => _defaultStyles.Peek();
 
     public void PushDefaultTextStyle(TextStyle style)
