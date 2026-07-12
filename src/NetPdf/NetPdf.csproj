@@ -17,6 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="NetPdf.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="PDFsharp" Version="6.1.1" />
     <PackageReference Include="PdfPig" Version="0.1.9" />
     <PackageReference Include="PDFtoImage" Version="5.1.0" />

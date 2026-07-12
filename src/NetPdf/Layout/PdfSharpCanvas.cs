@@ -10,11 +10,14 @@ internal sealed class PdfSharpCanvas : ICanvas
     private readonly Stack<XGraphicsState> _states = new();
     private readonly Dictionary<TextStyle, XFont> _fonts = [];
 
-    internal PdfSharpCanvas(XGraphics gfx)
+    internal PdfSharpCanvas(XGraphics gfx, PageContext? pageContext = null)
     {
         SystemFontResolver.Register();
         _gfx = gfx;
+        PageContext = pageContext ?? new PageContext();
     }
+
+    public PageContext PageContext { get; }
 
     public void DrawText(string text, TextStyle style, double x, double y)
     {

@@ -12,6 +12,8 @@ internal sealed class TestCanvas : ICanvas
     private double _originY;
     private readonly Stack<(double X, double Y)> _saved = new();
 
+    public PageContext PageContext { get; } = new();
+
     /// <summary>Text drawn so far, with positions in absolute coordinates.</summary>
     public List<(string Text, double X, double Y)> DrawnText { get; } = [];
 

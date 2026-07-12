@@ -50,6 +50,10 @@ public sealed class PdfBuilder
         return this;
     }
 
+    /// <summary>Renders a page layout (header/content/footer slots) into the document.</summary>
+    internal int AddPageLayout(PageLayout layout, PageContext context) =>
+        LayoutRenderer.Render(_document, layout, context);
+
     /// <summary>
     /// Configures the document outline (bookmarks). Call after the pages the bookmarks
     /// point to have been added.

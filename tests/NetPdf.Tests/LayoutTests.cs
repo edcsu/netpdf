@@ -120,6 +120,7 @@ public class LayoutTests
     /// <summary>Deterministic canvas: every character is 5 pt wide, every line 10 pt tall.</summary>
     private sealed class FakeCanvas : ICanvas
     {
+        public PageContext PageContext { get; } = new();
         public void DrawText(string text, TextStyle style, double x, double y) { }
         public Size MeasureText(string text, TextStyle style) => new(text.Length * 5, 10);
         public void Translate(double dx, double dy) { }
