@@ -54,6 +54,22 @@ internal sealed class PdfSharpCanvas : ICanvas, ITagCanvas
 
     public TextStyle DefaultTextStyle => _defaultStyles.Peek();
 
+    private readonly Stack<ContentDirection> _directions = new([ContentDirection.LeftToRight]);
+
+    /// <inheritdoc />
+    public ContentDirection Direction => _directions.Peek();
+
+    /// <inheritdoc />
+    public void PushDirection(ContentDirection direction) => _directions.Push(direction);
+
+    /// <inheritdoc />
+    public void PopDirection()
+    {
+        if (_directions.Count <= 1)
+            throw new InvalidOperationException("No content direction to pop.");
+        _directions.Pop();
+    }
+
     public void PushDefaultTextStyle(TextStyle style)
     {
         ArgumentNullException.ThrowIfNull(style);

@@ -137,6 +137,17 @@ public sealed class ContainerDescriptor
         });
 
     /// <summary>
+    /// Lays out the content right-to-left: text defaults to right alignment with
+    /// bidirectional reordering and Arabic shaping, and rows/inlined items mirror.
+    /// </summary>
+    public ContainerDescriptor ContentFromRightToLeft() =>
+        Wrap(new ContentDirectionElement { Direction = ContentDirection.RightToLeft });
+
+    /// <summary>Lays out the content left-to-right (overriding an outer right-to-left scope).</summary>
+    public ContainerDescriptor ContentFromLeftToRight() =>
+        Wrap(new ContentDirectionElement { Direction = ContentDirection.LeftToRight });
+
+    /// <summary>
     /// Marks the content with a semantic role for tagged-PDF output (requires
     /// <c>WithTagging()</c> on the document; a no-op otherwise).
     /// </summary>

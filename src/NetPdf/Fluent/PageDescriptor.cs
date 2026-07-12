@@ -17,6 +17,7 @@ public sealed class PageDescriptor
     private double _marginRight = 50;
     private double _marginBottom = 50;
     private bool _debugOverlay;
+    private bool _rtl;
     private Action<ContainerDescriptor>? _header;
     private Action<ContainerDescriptor>? _content;
     private Action<ContainerDescriptor>? _footer;
@@ -52,6 +53,13 @@ public sealed class PageDescriptor
         _marginTop = top;
         _marginRight = right;
         _marginBottom = bottom;
+        return this;
+    }
+
+    /// <summary>Lays out all of the page's slots right-to-left.</summary>
+    public PageDescriptor ContentFromRightToLeft()
+    {
+        _rtl = true;
         return this;
     }
 
@@ -106,6 +114,8 @@ public sealed class PageDescriptor
     {
         IElement element = new EmptyElement();
         configure?.Invoke(new ContainerDescriptor(e => element = e));
+        if (_rtl)
+            element = new ContentDirectionElement { Direction = ContentDirection.RightToLeft, Child = element };
         return _debugOverlay
             ? new DebugAreaElement { Label = slotName, Child = element }
             : element;
