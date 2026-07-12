@@ -104,6 +104,46 @@ public sealed class ContainerDescriptor
             Color = color ?? System.Drawing.Color.Black,
         });
 
+    /// <summary>Keeps the content on one page, deferring it to the next page instead of splitting it.</summary>
+    public ContainerDescriptor ShowEntire() => Wrap(new ShowEntireElement());
+
+    /// <summary>
+    /// Starts the content on the next page unless at least <paramref name="minHeight"/> points
+    /// of height remain on the current page.
+    /// </summary>
+    public ContainerDescriptor EnsureSpace(double minHeight = 150) =>
+        Wrap(new EnsureSpaceElement { MinHeight = minHeight });
+
+    /// <summary>Renders the content only once; afterwards it occupies no space (for repeated slots).</summary>
+    public ContainerDescriptor ShowOnce() => Wrap(new ShowOnceElement());
+
+    /// <summary>Hides the content the first time this slot is rendered (for repeated slots).</summary>
+    public ContainerDescriptor SkipOnce() => Wrap(new SkipOnceElement());
+
+    /// <summary>Renders the content only when <paramref name="condition"/> is true.</summary>
+    public ContainerDescriptor ShowIf(bool condition) => Wrap(new ShowIfElement { Condition = condition });
+
+    /// <summary>Renders only what fits on the current page and discards the remainder.</summary>
+    public ContainerDescriptor StopPaging() => Wrap(new StopPagingElement());
+
+    /// <summary>Forces following content to start on the next page.</summary>
+    public void PageBreak() => _assign(new PageBreakElement());
+
+    /// <summary>
+    /// Renders the described content again on every page while the surrounding context keeps
+    /// paginating. Must be bounded (e.g. combined with <see cref="StopPaging"/>).
+    /// </summary>
+    public void Repeat(Action<ContainerDescriptor> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        _assign(new RepeatElement(() =>
+        {
+            IElement child = new EmptyElement();
+            configure(new ContainerDescriptor(e => child = e));
+            return child;
+        }));
+    }
+
     /// <summary>Applies a default text style to all text inside the slot.</summary>
     public ContainerDescriptor DefaultTextStyle(TextStyle style)
     {
