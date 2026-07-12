@@ -1,3 +1,4 @@
+using NetPdf.Layout;
 using PdfSharp.Pdf;
 using SharpDocument = PdfSharp.Pdf.PdfDocument;
 
@@ -25,6 +26,27 @@ public sealed class PdfBuilder
     {
         using var page = new PageBuilder(_document.AddPage());
         configure(page);
+        return this;
+    }
+
+    /// <summary>
+    /// Renders a layout element tree onto A4 pages with a 50-point margin, adding pages
+    /// automatically until the content is fully rendered.
+    /// </summary>
+    public PdfBuilder AddContent(IElement content) =>
+        AddContent(content, pageWidth: 595, pageHeight: 842, margin: 50);
+
+    /// <summary>
+    /// Renders a layout element tree onto pages of the given size (points), adding pages
+    /// automatically until the content is fully rendered.
+    /// </summary>
+    public PdfBuilder AddContent(IElement content, double pageWidth, double pageHeight, double margin)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageWidth);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageHeight);
+        ArgumentOutOfRangeException.ThrowIfNegative(margin);
+        LayoutRenderer.Render(_document, content, pageWidth, pageHeight, margin);
         return this;
     }
 
