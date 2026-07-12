@@ -225,6 +225,36 @@ public sealed class ContainerDescriptor
         _assign(layers);
     }
 
+    /// <summary>
+    /// Places content with before/after slots repeated above and below it on every page
+    /// the content spans.
+    /// </summary>
+    public void Decoration(Action<DecorationDescriptor> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        var descriptor = new DecorationDescriptor();
+        configure(descriptor);
+        _assign(descriptor.Build());
+    }
+
+    /// <summary>Places items flowed horizontally with wrapping, like words in a paragraph.</summary>
+    public void Inlined(Action<InlinedDescriptor> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        var inlined = new InlinedElement();
+        configure(new InlinedDescriptor(inlined));
+        _assign(inlined);
+    }
+
+    /// <summary>Places a bulleted or numbered list in the slot.</summary>
+    public void List(Action<ListDescriptor> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        var descriptor = new ListDescriptor();
+        configure(descriptor);
+        _assign(descriptor.Build());
+    }
+
     /// <summary>Places a custom element in the slot.</summary>
     public void Element(IElement element)
     {
