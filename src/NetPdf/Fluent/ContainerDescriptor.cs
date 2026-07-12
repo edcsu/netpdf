@@ -113,6 +113,13 @@ public sealed class ContainerDescriptor
     public ContainerDescriptor Background(System.Drawing.Color color, double cornerRadius = 0) =>
         Wrap(new BackgroundElement { Color = color, CornerRadius = cornerRadius });
 
+    /// <summary>
+    /// Paints an approximated drop shadow behind the content. PDF has no native blur; see
+    /// <see cref="ShadowStyle"/> for how blur is approximated.
+    /// </summary>
+    public ContainerDescriptor Shadow(ShadowStyle? style = null) =>
+        Wrap(new ShadowElement { Style = style ?? new ShadowStyle() });
+
     /// <summary>Strokes a uniform border on the content's edges; it consumes no layout space.</summary>
     public ContainerDescriptor Border(double thickness, System.Drawing.Color? color = null) =>
         Border(thickness, thickness, thickness, thickness, color);
