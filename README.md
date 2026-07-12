@@ -1,5 +1,13 @@
 # NetPdf
 
+![GitHub stars](https://shieldcn.dev/github/stars/edcsu/netpdf)
+![GitHub release](https://shieldcn.dev/github/release/edcsu/netpdf)
+![GitHub CI](https://shieldcn.dev/github/ci/edcsu/netpdf)
+![GitHub license](https://shieldcn.dev/github/license/edcsu/netpdf)
+![GitHub issues](https://shieldcn.dev/github/issues/edcsu/netpdf)
+![GitHub PRs](https://shieldcn.dev/github/prs/edcsu/netpdf)
+![GitHub commits](https://shieldcn.dev/github/commits/edcsu/netpdf)
+
 Create, view, and manage PDF files in .NET with one fluent API.
 
 NetPdf wraps three battle-tested, permissively-licensed libraries behind a single coherent surface:
