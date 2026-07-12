@@ -5,7 +5,7 @@ namespace NetPdf.Fluent;
 
 /// <summary>
 /// Configures one content slot. Chainable calls wrap the slot in sizing/position containers;
-/// terminal calls (<see cref="Text"/>, <see cref="Column"/>, …) place the slot's content.
+/// terminal calls (<see cref="Text(string, TextStyle?)"/>, <see cref="Column"/>, …) place the slot's content.
 /// </summary>
 public sealed class ContainerDescriptor
 {
@@ -104,8 +104,24 @@ public sealed class ContainerDescriptor
             Color = color ?? System.Drawing.Color.Black,
         });
 
+    /// <summary>Applies a default text style to all text inside the slot.</summary>
+    public ContainerDescriptor DefaultTextStyle(TextStyle style)
+    {
+        ArgumentNullException.ThrowIfNull(style);
+        return Wrap(new DefaultTextStyleElement { Style = style });
+    }
+
     /// <summary>Places word-wrapping text in the slot.</summary>
     public void Text(string text, TextStyle? style = null) => _assign(new TextElement(text, style));
+
+    /// <summary>Places a rich text block composed of styled spans in the slot.</summary>
+    public void Text(Action<TextDescriptor> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        var descriptor = new TextDescriptor();
+        configure(descriptor);
+        _assign(descriptor.Build());
+    }
 
     /// <summary>
     /// Places page-number text in the slot; <c>{number}</c> is the current page and
