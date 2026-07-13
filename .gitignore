@@ -482,5 +482,8 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
-docs/_site
-docs/api
+
+# DocFX generated output
+docs/_site/
+docs/api/*.yml
+docs/api/.manifest
