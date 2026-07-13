@@ -62,5 +62,5 @@ Backend decision: render through PDFsharp `XGraphics` initially, reusing `System
 
 ## Out of scope
 
-- A companion/previewer application (use page rendering instead)
+- A previewer application (use page rendering instead)
 - Form fields (AcroForms) — may be reconsidered after Phase 4
