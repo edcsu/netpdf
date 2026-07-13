@@ -10,6 +10,8 @@
 
 Create, view, and manage PDF files in .NET with one fluent API.
 
+**📖 Full documentation & API reference: https://edcsu.github.io/netpdf/**
+
 NetPdf wraps three battle-tested, permissively-licensed libraries behind a single coherent surface:
 
 | Capability | Powered by | License |
@@ -258,6 +260,11 @@ var allPages = doc.RenderAllPages(dpi: 96);
 - Rendering Arabic requires a font with presentation-form glyphs (e.g. Arial, Noto Naskh Arabic, Amiri).
 - Linearization writes simplified (structurally valid) hint tables; the practical benefit is first-page-first ordering.
 - Signature verification checks integrity only; certificate trust chains are not evaluated.
+
+## Contributing & releasing
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) — build, test, and PR guidelines.
+- [RELEASING.md](RELEASING.md) — how tagged releases publish to NuGet.
 
 ## License
 
