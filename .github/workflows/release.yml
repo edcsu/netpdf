@@ -1,0 +1,113 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+      - name: Pack NetPdfKit
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          dotnet pack src/NetPdf -c Release -p:Version="$VERSION" -o out
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-package
+          path: |
+            out/*.nupkg
+            out/*.snupkg
+          if-no-files-found: error
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+      - name: Install DocFX
+        run: dotnet tool update -g docfx
+      - name: Build documentation
+        run: docfx docs/docfx.json
+      - name: Zip docs site
+        run: |
+          cd docs/_site
+          zip -r "$GITHUB_WORKSPACE/docs-site.zip" .
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-site
+          path: docs-site.zip
+          if-no-files-found: error
+
+  previewer:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: win-x64
+            os: windows-latest
+          - rid: linux-x64
+            os: ubuntu-latest
+          - rid: osx-arm64
+            os: macos-latest
+          - rid: osx-x64
+            os: macos-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+      - name: Publish self-contained previewer (${{ matrix.rid }})
+        run: >
+          dotnet publish src/NetPdf.Previewer.App -c Release -f net10.0 -r ${{ matrix.rid }} --self-contained
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -o publish/${{ matrix.rid }}
+      - name: Zip previewer binaries
+        shell: bash
+        run: |
+          cd publish/${{ matrix.rid }}
+          7z a "$GITHUB_WORKSPACE/netpdf-previewer-${{ matrix.rid }}.zip" .
+      - name: Upload previewer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: previewer-${{ matrix.rid }}
+          path: netpdf-previewer-${{ matrix.rid }}.zip
+          if-no-files-found: error
+
+  release:
+    needs: [pack, docs, previewer]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" artifacts/* \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
