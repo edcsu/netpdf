@@ -58,9 +58,8 @@ Backend decision: render through PDFsharp `XGraphics` initially, reusing `System
 - [x] **Digital signatures** (M) — detached PKCS#7 via `Sign(X509Certificate2)` as an incremental update with an invisible signature field (introduces a minimal AcroForm); `GetSignatures()` verifies integrity
 - [x] **Right-to-left content direction & advanced text shaping** (L) — `ContentFromRightToLeft()` on pages/containers; pragmatic UAX #9 bidi reordering, contextual Arabic shaping via presentation forms and lam-alef ligatures, mirrored rows/inlined items (full HarfBuzz-grade shaping for Indic scripts deferred)
 - [x] **Document linearization** (M) — `Linearize()` rewrites first-page objects first with a linearization dictionary and hint stream; hint tables are simplified but structurally valid (the practical benefit is fast-web-view ordering)
-- [x] **Debug aids** (S) — `.Debug(label, color)` element overlays and `PageDescriptor.DebugOverlay()` slot outlines; a live previewer app is out of scope — `RenderPage` to PNG is the supported inspection path
+- [x] **Debug aids** (S) — `.Debug(label, color)` element overlays and `PageDescriptor.DebugOverlay()` slot outlines
+- [x] **Live previewer** (M) — `NetPdfKit.Previewer` client package adds `ShowInPreviewer()`, pushing generated PDFs (and generation errors) over localhost HTTP to the `netpdf-previewer` Avalonia dotnet tool (`NetPdfKit.Previewer.App`) for hot-reload preview under `dotnet watch`
 
 ## Out of scope
-
-- A previewer application (use page rendering instead)
 - Form fields (AcroForms) — may be reconsidered after Phase 4

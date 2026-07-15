@@ -252,6 +252,27 @@ File.WriteAllBytes("page1.png", png);
 var allPages = doc.RenderAllPages(dpi: 96);
 ```
 
+## Live previewer
+
+Preview documents in a desktop window that re-renders on every rebuild — ideal with `dotnet watch`.
+
+```bash
+dotnet tool install -g NetPdfKit.Previewer.App   # installs the netpdf-previewer window
+dotnet add package NetPdfKit.Previewer           # adds ShowInPreviewer() to your project
+```
+
+```csharp
+using NetPdf.Fluent;
+using NetPdf.Previewer;
+
+Document.Create(doc => doc
+    .Page(page => page
+        .Content(c => c.Text("Hello, previewer!"))))
+    .ShowInPreviewer(); // instead of .Save()/.ToBytes() while designing
+```
+
+Run your app under `dotnet watch run`: `ShowInPreviewer()` launches the previewer window if it isn't already running (default port 12500) and pushes the fresh PDF to it after each rebuild. Generation exceptions appear in the window's error panel instead of killing the loop. The window offers continuous-scroll pages, a thumbnail sidebar, zoom / fit-to-width, and a Save PDF button.
+
 ## Notes
 
 - Page indexes are 0-based everywhere; coordinates are PDF points (1/72 inch) from the top-left corner.
