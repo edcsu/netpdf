@@ -18,7 +18,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
       - name: Install fonts (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -35,12 +38,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-      contents: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
       - name: Pack
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
@@ -56,10 +62,3 @@ jobs:
           --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
           --source https://api.nuget.org/v3/index.json
           --skip-duplicate
-      - name: Create GitHub Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create "${GITHUB_REF_NAME}" out/*.nupkg \
-            --title "${GITHUB_REF_NAME}" \
-            --generate-notes

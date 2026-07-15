@@ -425,6 +425,8 @@ test-results/
 # Mac bundle stuff
 *.dmg
 *.app
+# NetPdf.Previewer.App is a source directory, not a macOS bundle.
+!src/NetPdf.Previewer.App/
 
 # content below from: https://github.com/github/gitignore/blob/main/Global/macOS.gitignore
 # General

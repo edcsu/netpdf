@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net10.0</TargetFrameworks>
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>netpdf-previewer</ToolCommandName>
+    <PackageId>NetPdfKit.Previewer.App</PackageId>
+    <Description>Live PDF previewer window for NetPdfKit — receives documents pushed by NetPdfKit.Previewer's ShowInPreviewer().</Description>
+    <RollForward>Major</RollForward>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <!-- Desktop-only app; PDFium rendering supports all desktop targets. -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../NetPdf/NetPdf.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.2" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.2" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.2" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.2" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Tmds.DBus.Protocol" Version="0.21.3" />
+    <!-- Avalonia.Skia pulls the old SkiaSharp.NativeAssets.Linux 2.88.9, whose
+         native libSkiaSharp.so (v88.1) conflicts with the SkiaSharp 3.119 that
+         NetPdf's PDFtoImage/Svg.Skia use. Pin the Linux native to 3.119 so it
+         matches the managed SkiaSharp and the Win/macOS natives (which are
+         already 3.119). -->
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.2" />
+  </ItemGroup>
+
+</Project>
