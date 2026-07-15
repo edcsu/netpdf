@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>NetPdfKit.Previewer</PackageId>
+    <Version Condition="'$(Version)' == ''">0.1.0</Version>
+    <Description>Live hot-reload preview for NetPdfKit documents. Adds ShowInPreviewer() to push generated PDFs to the netpdf-previewer desktop app.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="NetPdf.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../NetPdf/NetPdf.csproj" />
+  </ItemGroup>
+
+</Project>
