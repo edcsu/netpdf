@@ -68,14 +68,20 @@ jobs:
           --source https://api.nuget.org/v3/index.json
           --skip-duplicate
       - name: Push NetPdfKit add-ons (Svg, Barcodes, Rendering)
-        run: >
-          dotnet nuget push "out/NetPdfKit.[SBR]*.nupkg"
-          --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
-          --source https://api.nuget.org/v3/index.json
-          --skip-duplicate
+        run: |
+          # dotnet nuget push only understands * and ?, so let bash expand the pattern.
+          for f in out/NetPdfKit.[SBR]*.nupkg; do
+            dotnet nuget push "$f" \
+              --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" \
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate
+          done
       - name: Push NetPdfKit (meta-package)
-        run: >
-          dotnet nuget push "out/NetPdfKit.[0-9]*.nupkg"
-          --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
-          --source https://api.nuget.org/v3/index.json
-          --skip-duplicate
+        run: |
+          # dotnet nuget push only understands * and ?, so let bash expand the pattern.
+          for f in out/NetPdfKit.[0-9]*.nupkg; do
+            dotnet nuget push "$f" \
+              --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" \
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate
+          done
