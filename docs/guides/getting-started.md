@@ -6,6 +6,27 @@
 dotnet add package NetPdfKit
 ```
 
+### Lean install
+
+Pick what you need. `NetPdfKit` is the full install. `NetPdfKit.Core` is the lean one, with no SkiaSharp, SVG, barcode or PDFium dependencies.
+
+| Package | Adds | Pulls in |
+|---|---|---|
+| `NetPdfKit` | Everything below | Core + all add-ons |
+| `NetPdfKit.Core` | Create, merge, split, encrypt, extract text and images | PDFsharp, PdfPig |
+| `NetPdfKit.Svg` | `Svg()`, `ImageSource.FromSvg` | Svg.Skia |
+| `NetPdfKit.Barcodes` | `QrCode()`, `Barcode()`, `BarcodeGenerator` | ZXing.Net |
+| `NetPdfKit.Rendering` | `RenderPage()`, `RenderAllPages()` | PDFtoImage (PDFium) |
+
+```sh
+# lean: just the core
+dotnet add package NetPdfKit.Core
+# then only what you use
+dotnet add package NetPdfKit.Barcodes
+```
+
+Each add-on extends the core in the same namespaces, so your code needs no extra `using`. If you call `QrCode()` without `NetPdfKit.Barcodes` installed, it won't compile. Add the package and it will.
+
 The package targets `net8.0`, `net9.0`, `net10.0`, and `net11.0` and works on Windows, macOS, and Linux. Fonts come from your registered fonts (`NetPdfFonts.Register`), then the operating system's font directories, then a bundled Liberation Sans. So minimal Linux containers work without installing any font package. For Arial-like text on Linux, installing `fonts-liberation` is still fine but no longer needed.
 
 ## Create your first PDF

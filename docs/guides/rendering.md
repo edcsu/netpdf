@@ -1,6 +1,6 @@
 # Rendering pages to images
 
-Render pages to PNG bytes via [PDFtoImage](https://github.com/sungaila/PDFtoImage) (PDFium):
+Needs the `NetPdfKit.Rendering` package (included in `NetPdfKit`). Render pages to PNG bytes via [PDFtoImage](https://github.com/sungaila/PDFtoImage) (PDFium):
 
 ```csharp
 using var doc = PdfFile.Open("report.pdf");

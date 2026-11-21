@@ -2,10 +2,14 @@
 
 Releases are fully automated: pushing a version tag builds, packs, publishes to NuGet, and creates a GitHub Release. No API keys are stored — publishing uses [NuGet trusted publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing) via GitHub OIDC.
 
+## Packages
+
+One tag publishes the whole library family at the same version, in this order: `NetPdfKit.Core`, then `NetPdfKit.Svg`, `NetPdfKit.Barcodes`, `NetPdfKit.Rendering`, then the `NetPdfKit` meta-package that depends on them all. The Previewer packages go out through `release.yml`. A new package id needs a trusted-publishing policy on nuget.org before its first push.
+
 ## Versioning
 
 - The package version comes from the git tag: tag `v1.2.3` publishes package version `1.2.3` (CI passes `-p:Version=${GITHUB_REF_NAME#v}` to `dotnet pack`).
-- The `1.0.0` in `src/NetPdf/NetPdf.csproj` is only a local-build fallback.
+- The `1.0.0` in `src/NetPdf.Packaging.props` is only a local-build fallback.
 - Follow [SemVer](https://semver.org/): patch for fixes, minor for backwards-compatible features, major for breaking changes.
 
 ## Release steps

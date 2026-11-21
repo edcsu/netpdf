@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../NetPdf.Packaging.props" />
+
+  <!-- Meta-package: no code. Installing NetPdfKit pulls in the core and every add-on. -->
+  <PropertyGroup>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+    <PackageId>NetPdfKit</PackageId>
+    <AssemblyName>NetPdf.Bundle</AssemblyName>
+    <Description>Create, view, and manage PDF files with one fluent API. Full install: NetPdfKit.Core plus SVG, barcode and page-rendering add-ons. For a lean install use NetPdfKit.Core.</Description>
+    <PackageTags>pdf;create;merge;split;extract;render</PackageTags>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <SuppressDependenciesWhenPacking>false</SuppressDependenciesWhenPacking>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../NetPdf/NetPdf.csproj" />
+    <ProjectReference Include="../NetPdf.Svg/NetPdf.Svg.csproj" />
+    <ProjectReference Include="../NetPdf.Barcodes/NetPdf.Barcodes.csproj" />
+    <ProjectReference Include="../NetPdf.Rendering/NetPdf.Rendering.csproj" />
+  </ItemGroup>
+</Project>

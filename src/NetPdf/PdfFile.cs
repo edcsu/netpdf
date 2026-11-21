@@ -2,7 +2,6 @@ using System.Runtime.Versioning;
 using NetPdf.Creation;
 using NetPdf.Manipulation;
 using NetPdf.Reading;
-using NetPdf.Rendering;
 
 namespace NetPdf;
 
@@ -92,6 +91,12 @@ public sealed class PdfDocument : IDisposable
         _password = password;
         _reader = new Lazy<PdfReader>(() => new PdfReader(_bytes, _password));
     }
+
+    /// <summary>The raw PDF bytes, for add-on packages (no copy).</summary>
+    internal byte[] RawBytes => _bytes;
+
+    /// <summary>The open password, if any, for add-on packages.</summary>
+    internal string? Password => _password;
 
     /// <summary>The number of pages in the document.</summary>
     public int PageCount => _reader.Value.PageCount;
@@ -253,34 +258,6 @@ public sealed class PdfDocument : IDisposable
 
     /// <summary>The files embedded in the document.</summary>
     public IReadOnlyList<PdfAttachment> GetAttachments() => _reader.Value.GetAttachments();
-
-    // ---- Rendering ----
-
-    /// <summary>Renders a page (0-based index) to a PNG image.</summary>
-    [SupportedOSPlatform("windows")]
-    [SupportedOSPlatform("linux")]
-    [SupportedOSPlatform("macos")]
-    [SupportedOSPlatform("maccatalyst13.5")]
-    [SupportedOSPlatform("android31.0")]
-    [SupportedOSPlatform("ios13.6")]
-    public byte[] RenderPage(int pageIndex, int dpi = 150) =>
-        PdfRenderer.RenderPage(_bytes, pageIndex, dpi, _password);
-
-    /// <summary>Renders every page to a PNG image.</summary>
-    [SupportedOSPlatform("windows")]
-    [SupportedOSPlatform("linux")]
-    [SupportedOSPlatform("macos")]
-    [SupportedOSPlatform("maccatalyst13.5")]
-    [SupportedOSPlatform("android31.0")]
-    [SupportedOSPlatform("ios13.6")]
-    public IReadOnlyList<byte[]> RenderAllPages(int dpi = 150)
-    {
-        var count = PdfRenderer.GetPageCount(_bytes, _password);
-        var pages = new List<byte[]>(count);
-        for (var i = 0; i < count; i++)
-            pages.Add(RenderPage(i, dpi));
-        return pages;
-    }
 
     // ---- Output ----
 

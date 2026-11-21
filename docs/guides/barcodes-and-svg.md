@@ -1,6 +1,6 @@
 # Barcodes, QR codes, SVG, and canvas
 
-QR codes, barcodes (via [ZXing.Net](https://github.com/micjahn/ZXing.Net)), and SVG (rasterized via [Svg.Skia](https://github.com/wieslawsoltes/Svg.Skia)) render through the same image pipeline as regular images. `Canvas` exposes raw drawing for charts and custom graphics.
+QR codes and barcodes need `NetPdfKit.Barcodes`, and SVG needs `NetPdfKit.Svg` (both included in `NetPdfKit`). QR codes, barcodes (via [ZXing.Net](https://github.com/micjahn/ZXing.Net)), and SVG (rasterized via [Svg.Skia](https://github.com/wieslawsoltes/Svg.Skia)) render through the same image pipeline as regular images. `Canvas` exposes raw drawing for charts and custom graphics.
 
 ```csharp
 content.Column(column =>

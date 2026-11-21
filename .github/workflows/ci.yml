@@ -52,15 +52,30 @@ jobs:
       - name: Pack
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          dotnet pack src/NetPdf -c Release -p:Version="$VERSION" -o out
+          for p in NetPdf NetPdf.Svg NetPdf.Barcodes NetPdf.Rendering NetPdf.Bundle; do
+            dotnet pack src/$p -c Release -p:Version="$VERSION" -o out
+          done
       - name: NuGet login (OIDC → temp API key)
         uses: NuGet/login@v1
         id: nuget-login
         with:
           user: edcsu
-      - name: Push to nuget.org
+      # Core first, then the add-ons, then the meta-package that depends on them all.
+      - name: Push NetPdfKit.Core
         run: >
-          dotnet nuget push out/*.nupkg
+          dotnet nuget push "out/NetPdfKit.Core.*.nupkg"
+          --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+      - name: Push NetPdfKit add-ons (Svg, Barcodes, Rendering)
+        run: >
+          dotnet nuget push "out/NetPdfKit.[SBR]*.nupkg"
+          --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+      - name: Push NetPdfKit (meta-package)
+        run: >
+          dotnet nuget push "out/NetPdfKit.[0-9]*.nupkg"
           --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
           --source https://api.nuget.org/v3/index.json
           --skip-duplicate
