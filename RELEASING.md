@@ -36,7 +36,7 @@ That's it. Two workflows react to the tag, in parallel:
 
 Users can grab a previewer binary from the Release, unzip it, and run the `netpdf-previewer` executable directly — or still install it as a global tool with `dotnet tool install -g NetPdfKit.Previewer.App`.
 
-> Previewer binaries are also built (as downloadable workflow artifacts) on every PR and `main` push that touches the previewer or `src/`, via `.github/workflows/previewer-assets.yml`. That workflow never touches NuGet — publishing to nuget.org happens **only** on a `v*` tag.
+> Previewer binaries are also built (as downloadable workflow artifacts) on every PR and `main` push that touches the previewer or `src/`, via `.github/workflows/previewer-assets.yml`. That workflow never touches NuGet — publishing to nuget.org happens **only** on a `v*` tag push, or on a manual **Release** run with `dry_run` off and `publish_release` on.
 
 ## If something goes wrong
 
@@ -49,3 +49,11 @@ Users can grab a previewer binary from the Release, unzip it, and run the `netpd
 The docs site (DocFX → GitHub Pages) deploys automatically via `.github/workflows/docs.yml` on pushes to `main` that touch `docs/`, `src/`, or `README.md`.
 
 One-time setup: in the repo, go to **Settings → Pages** and set **Source** to **GitHub Actions**. The site is served at https://edcsu.github.io/netpdf/. You can also trigger a deploy manually from the Actions tab (`workflow_dispatch`).
+
+## Releasing from the Release workflow (manual run)
+
+You can also run **Release** by hand: set `dry_run` off, `publish_release` on, and `tag` to something like `v1.2.3`. It builds everything, creates the GitHub Release and the tag, and pushes the package to NuGet (the `nuget` job).
+
+- A tag made this way does not start the tag-triggered CI run (GitHub does not run workflows from tags created with the built-in token). That is why `release.yml` pushes to NuGet itself in this case.
+- The `tag` must start with `v`. Otherwise the `nuget` job stops instead of pushing a placeholder version.
+- NuGet trusted publishing is tied to a workflow file. On nuget.org, add a trusted publishing policy for `release.yml` (owner `edcsu`, repo `netpdf`), next to the existing one for `ci.yml`. Without it, the NuGet login step fails.

@@ -158,3 +158,40 @@ jobs:
           gh release create "$RELEASE_TAG" artifacts/* \
             --title "$RELEASE_TAG" \
             --generate-notes
+
+  # Pushing a v* tag already publishes to NuGet through ci.yml. A manual
+  # dispatch creates its tag with the built-in token, which does NOT start
+  # other workflows, so publish to NuGet from here in that case only.
+  nuget:
+    needs: [pack, docs, previewer]
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      !inputs.dry_run && inputs.publish_release
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Download package artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-package
+          path: out
+      - name: Check the package has a real version
+        run: |
+          if ls out/*.nupkg | grep -q "0.0.0-dispatch"; then
+            echo "::error::The 'tag' input must start with 'v' (e.g. v1.2.3). Not pushing a placeholder version to NuGet." >&2
+            exit 1
+          fi
+          ls out
+      - name: NuGet login (OIDC → temp API key)
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: edcsu
+      - name: Push to nuget.org
+        run: >
+          dotnet nuget push "out/*.nupkg"
+          --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
