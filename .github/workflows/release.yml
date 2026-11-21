@@ -118,7 +118,7 @@ jobs:
             11.0.x
       - name: Publish self-contained previewer (${{ matrix.rid }})
         run: >
-          dotnet publish src/NetPdf.Previewer.App -c Release -f net10.0 -r ${{ matrix.rid }} --self-contained
+          dotnet publish src/NetPdf.Previewer.App -c Release -f net10.0 -p:TargetFrameworks=net10.0 -r ${{ matrix.rid }} --self-contained
           -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
           -o publish/${{ matrix.rid }}
       - name: Zip previewer binaries
