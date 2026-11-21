@@ -30,7 +30,7 @@ jobs:
             9.0.x
             10.0.x
             11.0.x
-      - name: Pack NetPdfKit
+      - name: Pack NetPdfKit, Previewer and Previewer.App
         env:
           INPUT_TAG: ${{ inputs.tag }}
         run: |
@@ -41,7 +41,9 @@ jobs:
           else
             VERSION="0.0.0-dispatch"
           fi
-          dotnet pack src/NetPdf -c Release -p:Version="$VERSION" -o out
+          for project in src/NetPdf src/NetPdf.Previewer src/NetPdf.Previewer.App; do
+            dotnet pack "$project" -c Release -p:Version="$VERSION" -o out
+          done
       - name: Upload package artifact
         uses: actions/upload-artifact@v4
         with:

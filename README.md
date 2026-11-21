@@ -261,6 +261,8 @@ dotnet tool install -g NetPdfKit.Previewer.App   # installs the netpdf-previewer
 dotnet add package NetPdfKit.Previewer           # adds ShowInPreviewer() to your project
 ```
 
+The tool needs the .NET 8 runtime or newer, and `~/.dotnet/tools` on your PATH (the .NET SDK usually sets that up). `ShowInPreviewer()` starts the tool from PATH.
+
 ```csharp
 using NetPdf.Fluent;
 using NetPdf.Previewer;
