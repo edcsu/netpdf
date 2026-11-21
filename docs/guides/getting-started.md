@@ -6,7 +6,7 @@
 dotnet add package NetPdfKit
 ```
 
-The package targets `net8.0`, `net9.0`, and `net10.0` and works on Windows, macOS, and Linux. Fonts are resolved from the operating system's font directories on all platforms — on minimal Linux containers, install a font package such as `fonts-liberation` or `fonts-dejavu-core`.
+The package targets `net8.0`, `net9.0`, `net10.0`, and `net11.0` and works on Windows, macOS, and Linux. Fonts come from your registered fonts (`NetPdfFonts.Register`), then the operating system's font directories, then a bundled Liberation Sans. So minimal Linux containers work without installing any font package. For Arial-like text on Linux, installing `fonts-liberation` is still fine but no longer needed.
 
 ## Create your first PDF
 

@@ -4,7 +4,7 @@ Thanks for your interest in contributing! This guide covers everything you need 
 
 ## Prerequisites
 
-- [.NET SDK 10](https://dotnet.microsoft.com/download) — the library multi-targets `net8.0`, `net9.0`, and `net10.0`, so the newest SDK builds all three.
+- [.NET SDK 11](https://dotnet.microsoft.com/download) — the library multi-targets `net8.0`, `net9.0`, `net10.0`, and `net11.0`, so the newest SDK builds all four.
 - On Linux, install fonts used by the tests: `sudo apt-get install fonts-liberation fonts-dejavu-core`.
 
 ## Build and test

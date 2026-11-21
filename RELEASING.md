@@ -5,7 +5,7 @@ Releases are fully automated: pushing a version tag builds, packs, publishes to 
 ## Versioning
 
 - The package version comes from the git tag: tag `v1.2.3` publishes package version `1.2.3` (CI passes `-p:Version=${GITHUB_REF_NAME#v}` to `dotnet pack`).
-- The `0.1.0` in `src/NetPdf/NetPdf.csproj` is only a local-build fallback.
+- The `1.0.0` in `src/NetPdf/NetPdf.csproj` is only a local-build fallback.
 - Follow [SemVer](https://semver.org/): patch for fixes, minor for backwards-compatible features, major for breaking changes.
 
 ## Release steps
