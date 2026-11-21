@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageId>NetPdfKit</PackageId>
+    <PackageId>NetPdfKit.Core</PackageId>
     <Version Condition="'$(Version)' == ''">1.0.0</Version>
     <Authors>Ssewannonda Keith Edwin</Authors>
-    <Description>Create, view, and manage PDF files with one fluent API. Wraps PDFsharp, PdfPig, and PDFtoImage behind a unified document model.</Description>
+    <Description>Create, view, and manage PDF files with one fluent API. Lean core without image, SVG or barcode dependencies; add NetPdfKit.Svg, NetPdfKit.Barcodes or NetPdfKit.Rendering as needed, or install NetPdfKit for everything.</Description>
     <PackageTags>pdf;create;merge;split;extract;render</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -29,15 +29,13 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="NetPdf.Tests" />
+    <InternalsVisibleTo Include="NetPdf.Rendering" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="PDFsharp" Version="6.1.1" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.2" />
     <PackageReference Include="PdfPig" Version="0.1.9" />
-    <PackageReference Include="PDFtoImage" Version="5.1.0" />
-    <PackageReference Include="Svg.Skia" Version="5.1.1" />
-    <PackageReference Include="ZXing.Net" Version="0.16.11" />
   </ItemGroup>
 
 </Project>

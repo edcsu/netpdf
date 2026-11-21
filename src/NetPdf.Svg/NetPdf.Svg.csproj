@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../NetPdf.Packaging.props" />
+
+  <PropertyGroup>
+    <PackageId>NetPdfKit.Svg</PackageId>
+    <AssemblyName>NetPdf.Svg</AssemblyName>
+    <RootNamespace>NetPdf.Svg</RootNamespace>
+    <Description>SVG support for NetPdfKit.Core: ContainerDescriptor.Svg() and ImageSource.FromSvg(). Uses Svg.Skia.</Description>
+    <PackageTags>pdf;svg</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../NetPdf/NetPdf.csproj" />
+    <PackageReference Include="Svg.Skia" Version="5.1.1" />
+  </ItemGroup>
+</Project>

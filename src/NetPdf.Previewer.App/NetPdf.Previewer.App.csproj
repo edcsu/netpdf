@@ -33,6 +33,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../NetPdf/NetPdf.csproj" />
+    <ProjectReference Include="../NetPdf.Rendering/NetPdf.Rendering.csproj" />
   </ItemGroup>
 
   <ItemGroup>

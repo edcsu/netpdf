@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../NetPdf.Packaging.props" />
+
+  <PropertyGroup>
+    <PackageId>NetPdfKit.Rendering</PackageId>
+    <AssemblyName>NetPdf.Rendering</AssemblyName>
+    <RootNamespace>NetPdf.Rendering</RootNamespace>
+    <Description>Render PDF pages to PNG for NetPdfKit.Core: PdfDocument.RenderPage() and RenderAllPages(). Uses PDFium via PDFtoImage.</Description>
+    <PackageTags>pdf;render;png</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../NetPdf/NetPdf.csproj" />
+    <PackageReference Include="PDFtoImage" Version="5.1.0" />
+  </ItemGroup>
+</Project>

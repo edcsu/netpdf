@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../NetPdf.Packaging.props" />
+
+  <PropertyGroup>
+    <PackageId>NetPdfKit.Barcodes</PackageId>
+    <AssemblyName>NetPdf.Barcodes</AssemblyName>
+    <RootNamespace>NetPdf.Barcodes</RootNamespace>
+    <Description>Barcode and QR code support for NetPdfKit.Core: QrCode(), Barcode() and BarcodeGenerator. Uses ZXing.Net.</Description>
+    <PackageTags>pdf;barcode;qrcode</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../NetPdf/NetPdf.csproj" />
+    <PackageReference Include="ZXing.Net" Version="0.16.11" />
+  </ItemGroup>
+</Project>
