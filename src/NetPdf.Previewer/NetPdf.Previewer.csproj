@@ -4,8 +4,23 @@
     <PackageId>NetPdfKit.Previewer</PackageId>
     <Version Condition="'$(Version)' == ''">1.0.0</Version>
     <Description>Live hot-reload preview for NetPdfKit documents. Adds ShowInPreviewer() to push generated PDFs to the netpdf-previewer desktop app.</Description>
+    <PackageTags>pdf;preview;hot-reload;netpdf</PackageTags>
+    <Authors>Ssewannonda Keith Edwin</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/edcsu/netpdf</RepositoryUrl>
+    <PackageProjectUrl>https://edcsu.github.io/netpdf/</PackageProjectUrl>
+    <PackageReleaseNotes>See https://github.com/edcsu/netpdf/releases</PackageReleaseNotes>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="NetPdf.Tests" />

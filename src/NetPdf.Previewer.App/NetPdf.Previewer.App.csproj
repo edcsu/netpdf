@@ -2,17 +2,34 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net10.0</TargetFrameworks>
+    <!-- One target only. net8.0 + RollForward=Major runs on the .NET 8, 9, 10 and 11 runtimes.
+         Several targets would repeat the big native files and push the package over nuget.org's 250 MB limit. -->
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>netpdf-previewer</ToolCommandName>
     <PackageId>NetPdfKit.Previewer.App</PackageId>
     <Description>Live PDF previewer window for NetPdfKit — receives documents pushed by NetPdfKit.Previewer's ShowInPreviewer().</Description>
+    <PackageTags>pdf;preview;hot-reload;netpdf;dotnet-tool</PackageTags>
+    <Authors>Ssewannonda Keith Edwin</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/edcsu/netpdf</RepositoryUrl>
+    <PackageProjectUrl>https://edcsu.github.io/netpdf/</PackageProjectUrl>
+    <PackageReleaseNotes>See https://github.com/edcsu/netpdf/releases</PackageReleaseNotes>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <RollForward>Major</RollForward>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <!-- Desktop-only app; PDFium rendering supports all desktop targets. -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../NetPdf/NetPdf.csproj" />
@@ -32,5 +49,16 @@
          already 3.119). -->
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.2" />
   </ItemGroup>
+
+  <!-- Keep the package small. Drop the native .pdb files (about 80 MB each, useless to tool users)
+       and the native libs for platforms we don't ship. We keep win-x64, linux-x64, osx-arm64, osx-x64. -->
+  <Target Name="TrimToolPackage" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <_InRuntimes Include="@(ResolvedFileToPublish)" Condition="$([System.String]::Copy('%(RelativePath)').Replace('\\', '/').Contains('runtimes/'))" />
+      <_DropFromTool Include="@(_InRuntimes)" Condition="'%(Extension)' == '.pdb'" />
+      <_DropFromTool Include="@(_InRuntimes)" Condition="!$([System.String]::Copy('%(RelativePath)').Replace('\\', '/').Contains('runtimes/win-x64/')) And !$([System.String]::Copy('%(RelativePath)').Replace('\\', '/').Contains('runtimes/linux-x64/')) And !$([System.String]::Copy('%(RelativePath)').Replace('\\', '/').Contains('runtimes/osx-arm64/')) And !$([System.String]::Copy('%(RelativePath)').Replace('\\', '/').Contains('runtimes/osx-x64/')) And !$([System.String]::Copy('%(RelativePath)').Replace('\\', '/').Contains('runtimes/osx/')) And !$([System.String]::Copy('%(RelativePath)').Replace('\\', '/').Contains('runtimes/unix/')) And !$([System.String]::Copy('%(RelativePath)').Replace('\\', '/').Contains('runtimes/win/'))" />
+      <ResolvedFileToPublish Remove="@(_DropFromTool)" />
+    </ItemGroup>
+  </Target>
 
 </Project>

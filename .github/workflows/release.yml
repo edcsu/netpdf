@@ -30,7 +30,7 @@ jobs:
             9.0.x
             10.0.x
             11.0.x
-      - name: Pack NetPdfKit
+      - name: Work out the version
         env:
           INPUT_TAG: ${{ inputs.tag }}
         run: |
@@ -41,14 +41,30 @@ jobs:
           else
             VERSION="0.0.0-dispatch"
           fi
-          dotnet pack src/NetPdf -c Release -p:Version="$VERSION" -o out
-      - name: Upload package artifact
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+      - name: Pack NetPdfKit
+        run: dotnet pack src/NetPdf -c Release -p:Version="$VERSION" -o out/netpdfkit
+      - name: Pack NetPdfKit.Previewer
+        run: dotnet pack src/NetPdf.Previewer -c Release -p:Version="$VERSION" -o out/previewer
+      - name: Pack NetPdfKit.Previewer.App
+        run: dotnet pack src/NetPdf.Previewer.App -c Release -p:Version="$VERSION" -o out/previewer-app
+      - name: Upload NetPdfKit package
         uses: actions/upload-artifact@v4
         with:
-          name: nuget-package
-          path: |
-            out/*.nupkg
-            out/*.snupkg
+          name: nuget-netpdfkit
+          path: out/netpdfkit/*.*nupkg
+          if-no-files-found: error
+      - name: Upload NetPdfKit.Previewer package
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-previewer
+          path: out/previewer/*.*nupkg
+          if-no-files-found: error
+      - name: Upload NetPdfKit.Previewer.App package
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-previewer-app
+          path: out/previewer-app/*.*nupkg
           if-no-files-found: error
 
   docs:
@@ -172,26 +188,50 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Download package artifact
+      - name: Download NetPdfKit package
         uses: actions/download-artifact@v4
         with:
-          name: nuget-package
-          path: out
-      - name: Check the package has a real version
+          name: nuget-netpdfkit
+          path: out/netpdfkit
+      - name: Download NetPdfKit.Previewer package
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-previewer
+          path: out/previewer
+      - name: Download NetPdfKit.Previewer.App package
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-previewer-app
+          path: out/previewer-app
+      - name: Check the packages have a real version
         run: |
-          if ls out/*.nupkg | grep -q "0.0.0-dispatch"; then
+          if ls out/*/*.nupkg | grep -q "0.0.0-dispatch"; then
             echo "::error::The 'tag' input must start with 'v' (e.g. v1.2.3). Not pushing a placeholder version to NuGet." >&2
             exit 1
           fi
-          ls out
+          ls out/*
       - name: NuGet login (OIDC → temp API key)
         uses: NuGet/login@v1
         id: nuget-login
         with:
           user: edcsu
-      - name: Push to nuget.org
+      # One push per package, library first. If the big tool push fails, the
+      # first two are already out and a re-run skips them (--skip-duplicate).
+      - name: Push NetPdfKit
         run: >
-          dotnet nuget push "out/*.nupkg"
+          dotnet nuget push "out/netpdfkit/*.nupkg"
+          --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+      - name: Push NetPdfKit.Previewer
+        run: >
+          dotnet nuget push "out/previewer/*.nupkg"
+          --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+      - name: Push NetPdfKit.Previewer.App
+        run: >
+          dotnet nuget push "out/previewer-app/*.nupkg"
           --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
           --source https://api.nuget.org/v3/index.json
           --skip-duplicate
