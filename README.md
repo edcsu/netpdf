@@ -273,6 +273,21 @@ Document.Create(doc => doc
 
 Run your app under `dotnet watch run`: `ShowInPreviewer()` launches the previewer window if it isn't already running (default port 12500) and pushes the fresh PDF to it after each rebuild. Generation exceptions appear in the window's error panel instead of killing the loop. The window offers continuous-scroll pages, a thumbnail sidebar, zoom / fit-to-width, and a Save PDF button.
 
+## Fonts
+
+Fonts are looked up in this order: fonts you register, fonts installed on the machine, then a bundled Liberation Sans. So PDFs work even in a container with no fonts installed.
+
+To use your own font, register it once at startup, before you build any PDF:
+
+```csharp
+using NetPdf;
+
+NetPdfFonts.RegisterFile("Brand Sans", "fonts/BrandSans-Regular.ttf");
+NetPdfFonts.RegisterFile("Brand Sans", "fonts/BrandSans-Bold.ttf", bold: true);
+```
+
+Then use the family name as usual, for example `o.FontFamily("Brand Sans")`.
+
 ## Notes
 
 - Page indexes are 0-based everywhere; coordinates are PDF points (1/72 inch) from the top-left corner.
