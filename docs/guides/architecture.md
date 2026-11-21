@@ -19,5 +19,5 @@ NetPdf wraps battle-tested, permissively-licensed libraries behind a single cohe
 ## Design notes
 
 - Page indexes are 0-based everywhere; coordinates are PDF points (1/72 inch) from the top-left corner.
-- Fonts are resolved from the operating system's font directories on all platforms.
+- Fonts come from your registered fonts, then the operating system's font directories, then a bundled Liberation Sans. See [Fonts](fonts.md).
 - Operation ordering matters: manipulations → `Linearize()` → XMP / `AsPdfA()` → `Sign()` last. See [Managing PDFs](managing.md#operation-ordering).

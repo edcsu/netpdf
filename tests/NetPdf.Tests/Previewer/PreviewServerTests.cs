@@ -1,4 +1,4 @@
-#if NET10_0_OR_GREATER
+#if NET10_0
 using System.Net;
 using System.Net.Sockets;
 using NetPdf.Previewer.App;

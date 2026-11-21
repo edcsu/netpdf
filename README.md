@@ -22,7 +22,7 @@ NetPdf wraps three battle-tested, permissively-licensed libraries behind a singl
 | Barcodes & QR codes | [ZXing.Net](https://github.com/micjahn/ZXing.Net) | Apache-2.0 |
 | SVG rasterization | [Svg.Skia](https://github.com/wieslawsoltes/Svg.Skia) (SkiaSharp) | MIT |
 
-Targets `net8.0`, `net9.0`, and `net10.0`. Works on Windows, macOS, and Linux.
+Targets `net8.0`, `net9.0`, `net10.0`, and `net11.0`. Works on Windows, macOS, and Linux.
 
 ## Install
 
@@ -273,10 +273,25 @@ Document.Create(doc => doc
 
 Run your app under `dotnet watch run`: `ShowInPreviewer()` launches the previewer window if it isn't already running (default port 12500) and pushes the fresh PDF to it after each rebuild. Generation exceptions appear in the window's error panel instead of killing the loop. The window offers continuous-scroll pages, a thumbnail sidebar, zoom / fit-to-width, and a Save PDF button.
 
+## Fonts
+
+Fonts are looked up in this order: fonts you register, fonts installed on the machine, then a bundled Liberation Sans. So PDFs work even in a container with no fonts installed.
+
+To use your own font, register it once at startup, before you build any PDF:
+
+```csharp
+using NetPdf;
+
+NetPdfFonts.RegisterFile("Brand Sans", "fonts/BrandSans-Regular.ttf");
+NetPdfFonts.RegisterFile("Brand Sans", "fonts/BrandSans-Bold.ttf", bold: true);
+```
+
+Then use the family name in a text span, for example `t.Span("Hello").FontFamily("Brand Sans")`.
+
 ## Notes
 
 - Page indexes are 0-based everywhere; coordinates are PDF points (1/72 inch) from the top-left corner.
-- Fonts are resolved from the operating system's font directories on all platforms.
+- Fonts: your registered fonts (`NetPdfFonts.Register`) first, then the operating system's fonts, then a bundled Liberation Sans (SIL OFL) as a last fallback. A container with no fonts still produces PDFs. Missing bold/italic faces fall back to the regular face.
 - `Protect` uses AES-256 by default; pass `EncryptionAlgorithm.Rc4_128` only if a legacy reader requires it.
 - Rendering Arabic requires a font with presentation-form glyphs (e.g. Arial, Noto Naskh Arabic, Amiri).
 - Linearization writes simplified (structurally valid) hint tables; the practical benefit is first-page-first ordering.
