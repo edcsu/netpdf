@@ -286,7 +286,7 @@ NetPdfFonts.RegisterFile("Brand Sans", "fonts/BrandSans-Regular.ttf");
 NetPdfFonts.RegisterFile("Brand Sans", "fonts/BrandSans-Bold.ttf", bold: true);
 ```
 
-Then use the family name as usual, for example `o.FontFamily("Brand Sans")`.
+Then use the family name in a text span, for example `t.Span("Hello").FontFamily("Brand Sans")`.
 
 ## Notes
 
