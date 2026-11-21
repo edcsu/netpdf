@@ -22,7 +22,7 @@ NetPdf wraps three battle-tested, permissively-licensed libraries behind a singl
 | Barcodes & QR codes | [ZXing.Net](https://github.com/micjahn/ZXing.Net) | Apache-2.0 |
 | SVG rasterization | [Svg.Skia](https://github.com/wieslawsoltes/Svg.Skia) (SkiaSharp) | MIT |
 
-Targets `net8.0`, `net9.0`, and `net10.0`. Works on Windows, macOS, and Linux.
+Targets `net8.0`, `net9.0`, `net10.0`, and `net11.0`. Works on Windows, macOS, and Linux.
 
 ## Install
 
@@ -276,7 +276,7 @@ Run your app under `dotnet watch run`: `ShowInPreviewer()` launches the previewe
 ## Notes
 
 - Page indexes are 0-based everywhere; coordinates are PDF points (1/72 inch) from the top-left corner.
-- Fonts are resolved from the operating system's font directories on all platforms.
+- Fonts: your registered fonts (`NetPdfFonts.Register`) first, then the operating system's fonts, then a bundled Liberation Sans (SIL OFL) as a last fallback. A container with no fonts still produces PDFs. Missing bold/italic faces fall back to the regular face.
 - `Protect` uses AES-256 by default; pass `EncryptionAlgorithm.Rc4_128` only if a legacy reader requires it.
 - Rendering Arabic requires a font with presentation-form glyphs (e.g. Arial, Noto Naskh Arabic, Amiri).
 - Linearization writes simplified (structurally valid) hint tables; the practical benefit is first-page-first ordering.

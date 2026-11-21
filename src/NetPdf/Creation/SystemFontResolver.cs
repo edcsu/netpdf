@@ -5,12 +5,16 @@ namespace NetPdf.Creation;
 /// <summary>
 /// Font resolver that locates TrueType/OpenType fonts in the operating system's
 /// standard font directories. PDFsharp requires a resolver on macOS and Linux.
+/// Order: fonts you registered, then OS fonts, then the bundled Liberation Sans
+/// (so a container with no fonts still works).
 /// </summary>
 internal sealed class SystemFontResolver : IFontResolver
 {
-    private static readonly Lazy<Dictionary<string, string>> FontFiles = new(ScanFontDirectories);
+    private const string EmbeddedPrefix = "@embedded|";
 
-    private static readonly string[] FontDirectories =
+    private readonly Lazy<Dictionary<string, string>> _fontFiles;
+
+    private static readonly string[] DefaultFontDirectories =
     [
         "/System/Library/Fonts/Supplemental",
         "/System/Library/Fonts",
@@ -24,6 +28,17 @@ internal sealed class SystemFontResolver : IFontResolver
 
     private static readonly string[] FallbackFamilies = ["Arial", "Helvetica", "Liberation Sans", "DejaVu Sans", "Verdana"];
 
+    internal SystemFontResolver() : this(DefaultFontDirectories)
+    {
+    }
+
+    // Tests pass their own folders (or none) to simulate a machine with no fonts.
+    internal SystemFontResolver(IEnumerable<string> fontDirectories)
+    {
+        var dirs = fontDirectories.ToArray();
+        _fontFiles = new Lazy<Dictionary<string, string>>(() => ScanFontDirectories(dirs));
+    }
+
     internal static void Register()
     {
         GlobalFontSettings.FontResolver ??= new SystemFontResolver();
@@ -31,6 +46,12 @@ internal sealed class SystemFontResolver : IFontResolver
 
     public FontResolverInfo? ResolveTypeface(string familyName, bool bold, bool italic)
     {
+        // 1. Fonts the user registered.
+        var custom = CustomFonts.Find(familyName, bold, italic);
+        if (custom is not null)
+            return new FontResolverInfo(custom);
+
+        // 2. OS fonts, then the old fallback list.
         var face = FindFace(familyName, bold, italic);
         if (face is null)
         {
@@ -42,15 +63,50 @@ internal sealed class SystemFontResolver : IFontResolver
             }
         }
 
-        return face is null ? null : new FontResolverInfo(face);
+        // 3. Bundled Liberation Sans. Never returns null.
+        face ??= EmbeddedPrefix + StyleToken(bold, italic);
+        return new FontResolverInfo(face);
     }
 
-    public byte[]? GetFont(string faceName) =>
-        FontFiles.Value.TryGetValue(faceName, out var path) ? File.ReadAllBytes(path) : null;
-
-    private static string? FindFace(string familyName, bool bold, bool italic)
+    public byte[]? GetFont(string faceName)
     {
-        var files = FontFiles.Value;
+        if (CustomFonts.TryGetBytes(faceName, out var bytes))
+            return bytes;
+        if (faceName.StartsWith(EmbeddedPrefix, StringComparison.Ordinal))
+            return LoadEmbedded(faceName[EmbeddedPrefix.Length..]);
+        return _fontFiles.Value.TryGetValue(faceName, out var path) ? File.ReadAllBytes(path) : null;
+    }
+
+    private static readonly Dictionary<string, byte[]> EmbeddedCache = new();
+
+    private static byte[]? LoadEmbedded(string style)
+    {
+        lock (EmbeddedCache)
+        {
+            if (EmbeddedCache.TryGetValue(style, out var cached))
+                return cached;
+
+            var name = style switch
+            {
+                "bolditalic" => "BoldItalic",
+                "bold" => "Bold",
+                "italic" => "Italic",
+                _ => "Regular",
+            };
+            using var stream = typeof(SystemFontResolver).Assembly
+                .GetManifestResourceStream($"NetPdf.Fonts.LiberationSans-{name}.ttf");
+            if (stream is null)
+                return null;
+
+            using var ms = new MemoryStream();
+            stream.CopyTo(ms);
+            return EmbeddedCache[style] = ms.ToArray();
+        }
+    }
+
+    private string? FindFace(string familyName, bool bold, bool italic)
+    {
+        var files = _fontFiles.Value;
         var family = NormalizeAlnum(familyName);
         var style = StyleToken(bold, italic);
 
@@ -63,7 +119,7 @@ internal sealed class SystemFontResolver : IFontResolver
         return files.ContainsKey(key) ? key : null;
     }
 
-    private static string StyleToken(bool bold, bool italic) => (bold, italic) switch
+    internal static string StyleToken(bool bold, bool italic) => (bold, italic) switch
     {
         (true, true) => "bolditalic",
         (true, false) => "bold",
@@ -74,13 +130,13 @@ internal sealed class SystemFontResolver : IFontResolver
     // Strips every non-alphanumeric character so family names match regardless of
     // whether the source (requested family vs. on-disk filename) uses spaces,
     // hyphens, or no separator at all (e.g. "Liberation Sans" vs "LiberationSans-Regular").
-    private static string NormalizeAlnum(string name) =>
+    internal static string NormalizeAlnum(string name) =>
         new(name.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
 
-    private static Dictionary<string, string> ScanFontDirectories()
+    private static Dictionary<string, string> ScanFontDirectories(string[] fontDirectories)
     {
         var map = new Dictionary<string, string>();
-        foreach (var dir in FontDirectories)
+        foreach (var dir in fontDirectories)
         {
             if (!Directory.Exists(dir))
                 continue;

@@ -23,12 +23,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Creation/Fonts/*.ttf" LogicalName="NetPdf.Fonts.%(Filename)%(Extension)" />
+    <None Include="Creation/Fonts/LICENSE-LiberationFonts.txt" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="NetPdf.Tests" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="PDFsharp" Version="6.1.1" />
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.1" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.2" />
     <PackageReference Include="PdfPig" Version="0.1.9" />
     <PackageReference Include="PDFtoImage" Version="5.1.0" />
     <PackageReference Include="Svg.Skia" Version="5.1.1" />

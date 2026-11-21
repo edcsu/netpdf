@@ -2,7 +2,7 @@
 
 Create, view, and manage PDF files in .NET with one fluent API.
 
-NetPdf (published on NuGet as **NetPdfKit**) wraps battle-tested, permissively-licensed libraries — PDFsharp, PdfPig, PDFtoImage, ZXing.Net, and Svg.Skia — behind a single coherent document model. It targets `net8.0`, `net9.0`, and `net10.0` and works on Windows, macOS, and Linux.
+NetPdf (published on NuGet as **NetPdfKit**) wraps battle-tested, permissively-licensed libraries — PDFsharp, PdfPig, PDFtoImage, ZXing.Net, and Svg.Skia — behind a single coherent document model. It targets `net8.0`, `net9.0`, `net10.0`, and `net11.0` and works on Windows, macOS, and Linux.
 
 ## Install
 
