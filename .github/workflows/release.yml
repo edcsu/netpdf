@@ -42,8 +42,11 @@ jobs:
             VERSION="0.0.0-dispatch"
           fi
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
-      - name: Pack NetPdfKit
-        run: dotnet pack src/NetPdf -c Release -p:Version="$VERSION" -o out/netpdfkit
+      - name: Pack NetPdfKit (core, add-ons, meta-package)
+        run: |
+          for p in NetPdf NetPdf.Svg NetPdf.Barcodes NetPdf.Rendering NetPdf.Bundle; do
+            dotnet pack src/$p -c Release -p:Version="$VERSION" -o out/netpdfkit
+          done
       - name: Pack NetPdfKit.Previewer
         run: dotnet pack src/NetPdf.Previewer -c Release -p:Version="$VERSION" -o out/previewer
       - name: Pack NetPdfKit.Previewer.App
@@ -215,11 +218,23 @@ jobs:
         id: nuget-login
         with:
           user: edcsu
-      # One push per package, library first. If the big tool push fails, the
+      # One push per package group, library first. If the big tool push fails, the
       # first two are already out and a re-run skips them (--skip-duplicate).
-      - name: Push NetPdfKit
+      - name: Push NetPdfKit.Core
         run: >
-          dotnet nuget push "out/netpdfkit/*.nupkg"
+          dotnet nuget push "out/netpdfkit/NetPdfKit.Core.*.nupkg"
+          --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+      - name: Push NetPdfKit add-ons (Svg, Barcodes, Rendering)
+        run: >
+          dotnet nuget push "out/netpdfkit/NetPdfKit.[SBR]*.nupkg"
+          --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+      - name: Push NetPdfKit (meta-package)
+        run: >
+          dotnet nuget push "out/netpdfkit/NetPdfKit.[0-9]*.nupkg"
           --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
           --source https://api.nuget.org/v3/index.json
           --skip-duplicate

@@ -255,12 +255,6 @@ public sealed class ContainerDescriptor
     /// <summary>Places an image loaded from a file in the slot, scaled to the available width.</summary>
     public void Image(string filePath) => Image(ImageSource.FromFile(filePath));
 
-    /// <summary>
-    /// Places an SVG in the slot, rasterized to a PNG at <paramref name="scale"/>× its intrinsic
-    /// size and scaled to the available width like an image. Output is raster, not vector.
-    /// </summary>
-    public void Svg(string markup, double scale = 2) => Image(ImageSource.FromSvg(markup, scale));
-
     /// <summary>Places a horizontal rule spanning the available width.</summary>
     public void LineHorizontal(double thickness = 1, System.Drawing.Color? color = null) =>
         _assign(new LineElement
@@ -355,15 +349,6 @@ public sealed class ContainerDescriptor
         ArgumentNullException.ThrowIfNull(draw);
         _assign(new CanvasElement(draw));
     }
-
-    /// <summary>Places a QR code in the slot, scaled to the available width like an image.</summary>
-    public void QrCode(string content, int pixelSize = 256) =>
-        Image(Creation.BarcodeGenerator.GenerateQrCode(content, pixelSize));
-
-    /// <summary>Places a barcode in the slot, scaled to the available width like an image.</summary>
-    public void Barcode(string content, Creation.BarcodeFormat format,
-        int pixelWidth = 256, int pixelHeight = 256) =>
-        Image(Creation.BarcodeGenerator.Generate(content, format, pixelWidth, pixelHeight));
 
     /// <summary>Places a custom element in the slot.</summary>
     public void Element(IElement element)

@@ -12,15 +12,15 @@ Create, view, and manage PDF files in .NET with one fluent API.
 
 **📖 Full documentation & API reference: https://edcsu.github.io/netpdf/**
 
-NetPdf wraps three battle-tested, permissively-licensed libraries behind a single coherent surface:
+NetPdf wraps battle-tested, permissively-licensed libraries behind a single coherent surface. Install everything with `NetPdfKit`, or start from the lean `NetPdfKit.Core` and add only what you use (see [Install](#install)):
 
-| Capability | Powered by | License |
-|---|---|---|
-| Create, merge, split, rotate, encrypt | [PDFsharp](https://github.com/empira/PDFsharp) | MIT |
-| Text & image extraction | [PdfPig](https://github.com/UglyToad/PdfPig) | Apache-2.0 |
-| Render pages to PNG | [PDFtoImage](https://github.com/sungaila/PDFtoImage) (PDFium) | MIT |
-| Barcodes & QR codes | [ZXing.Net](https://github.com/micjahn/ZXing.Net) | Apache-2.0 |
-| SVG rasterization | [Svg.Skia](https://github.com/wieslawsoltes/Svg.Skia) (SkiaSharp) | MIT |
+| Capability | Package | Powered by | License |
+|---|---|---|---|
+| Create, merge, split, rotate, encrypt | `NetPdfKit.Core` | [PDFsharp](https://github.com/empira/PDFsharp) | MIT |
+| Text & image extraction | `NetPdfKit.Core` | [PdfPig](https://github.com/UglyToad/PdfPig) | Apache-2.0 |
+| Render pages to PNG | `NetPdfKit.Rendering` | [PDFtoImage](https://github.com/sungaila/PDFtoImage) (PDFium) | MIT |
+| Barcodes & QR codes | `NetPdfKit.Barcodes` | [ZXing.Net](https://github.com/micjahn/ZXing.Net) | Apache-2.0 |
+| SVG rasterization | `NetPdfKit.Svg` | [Svg.Skia](https://github.com/wieslawsoltes/Svg.Skia) (SkiaSharp) | MIT |
 
 Targets `net8.0`, `net9.0`, `net10.0`, and `net11.0`. Works on Windows, macOS, and Linux.
 
@@ -29,6 +29,27 @@ Targets `net8.0`, `net9.0`, `net10.0`, and `net11.0`. Works on Windows, macOS, a
 ```sh
 dotnet add package NetPdfKit
 ```
+
+### Lean install
+
+Pick what you need. `NetPdfKit` is the full install. `NetPdfKit.Core` is the lean one, with no SkiaSharp, SVG, barcode or PDFium dependencies.
+
+| Package | Adds | Pulls in |
+|---|---|---|
+| `NetPdfKit` | Everything below | Core + all add-ons |
+| `NetPdfKit.Core` | Create, merge, split, encrypt, extract text and images | PDFsharp, PdfPig |
+| `NetPdfKit.Svg` | `Svg()`, `ImageSource.FromSvg` | Svg.Skia |
+| `NetPdfKit.Barcodes` | `QrCode()`, `Barcode()`, `BarcodeGenerator` | ZXing.Net |
+| `NetPdfKit.Rendering` | `RenderPage()`, `RenderAllPages()` | PDFtoImage (PDFium) |
+
+```sh
+# lean: just the core
+dotnet add package NetPdfKit.Core
+# then only what you use
+dotnet add package NetPdfKit.Barcodes
+```
+
+Each add-on extends the core in the same namespaces, so your code needs no extra `using`. If you call `QrCode()` without `NetPdfKit.Barcodes` installed, it won't compile. Add the package and it will.
 
 ## Create a PDF
 
@@ -142,7 +163,8 @@ Visual styling and transforms chain onto any container: `Background(color, corne
 content until it fits its slot. Layers accept a `zIndex` to control stacking order.
 
 QR codes, barcodes, and SVG render through the same image pipeline, and `Canvas` exposes raw
-drawing for charts and custom graphics:
+drawing for charts and custom graphics. `QrCode()` and `Barcode()` need `NetPdfKit.Barcodes`,
+and `Svg()` needs `NetPdfKit.Svg` (both are included in `NetPdfKit`):
 
 ```csharp
 content.Column(column =>
@@ -243,6 +265,8 @@ Document.Create(doc => doc
 **Operation ordering:** manipulations → `Linearize()` → `WithXmpMetadata()` / `AsPdfA()` → `Sign()` last. Linearizing flattens prior incremental updates; any rewrite after signing invalidates the signature.
 
 ## View (render to image)
+
+Needs `NetPdfKit.Rendering` (included in `NetPdfKit`).
 
 ```csharp
 using var doc = PdfFile.Open("report.pdf");
